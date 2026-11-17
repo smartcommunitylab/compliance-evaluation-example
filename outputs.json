@@ -1,0 +1,1520 @@
+{
+  "analysis_project": {
+    "domain": {
+      "domain": "finance",
+      "subdomain": "consumer lending",
+      "use_case": "classification of consumer loan applications and repayment-risk signaling"
+    },
+    "ai_task": "CLASSIFICATION",
+    "ai_task_value": "consumer loan repayment-risk classification",
+    "goal": "Support loan officers in assessing repayment risk for consumer loan applications.",
+    "purpose": "Classify consumer loan applications and provide an advisory repayment-risk signal to loan officers.",
+    "audience": "Loan officers",
+    "scope": {
+      "in_scope": [
+        "Classification of consumer loan applications",
+        "Generation of repayment-risk signals for loan-officer review"
+      ],
+      "out_of_scope": [
+        "Fully automated loan approval or rejection",
+        "Use outside consumer lending"
+      ]
+    },
+    "deployment": "CLOUD",
+    "name": "loan-app",
+    "geography": [
+      "EU"
+    ],
+    "environment": "PRODUCTION"
+  },
+  "analysis_project_context": {
+    "environment": "PRODUCTION",
+    "regulations": [
+      {
+        "framework": "EU_AI_ACT",
+        "article": null,
+        "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+        "version": "2024/1689"
+      },
+      {
+        "framework": "GDPR",
+        "article": null,
+        "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+        "version": "2016/679"
+      },
+      {
+        "framework": "EU_CHARTER",
+        "article": null,
+        "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:12012P/TXT",
+        "version": "2000/C 364/01"
+      },
+      {
+        "framework": "EBA_ML_GUIDELINES",
+        "article": null,
+        "uri": "https://www.eba.europa.eu/publications-and-media/press-releases/eba-publishes-report-machine-learning-credit-risk",
+        "version": "2023"
+      }
+    ],
+    "geography": [
+      "EU"
+    ],
+    "actor_role": "PROVIDER",
+    "actor_role_value": null,
+    "requirements": [
+      {
+        "id": "req-euai-art-9",
+        "name": "EU AI Act Art. 9 — Risk Management System",
+        "description": "Requires a documented, lifecycle-covering risk management system for high-risk AI.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 9",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "Providers of high-risk AI systems shall establish, implement, document and maintain a risk management system, identifying and analysing known and reasonably foreseeable risks, estimating and evaluating risks that may emerge from the intended purpose and reasonably foreseeable misuse, adopting suitable risk management measures, and testing the AI system to verify risk mitigations are effective.",
+        "summary": "Requires a documented, lifecycle-covering risk management system for high-risk AI.",
+        "kind": "RISK_MANAGEMENT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-10",
+        "name": "EU AI Act Art. 10 — Data Governance and Management",
+        "description": "Mandates representative, bias-examined, error-free datasets and documented data governance for high-risk AI.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 10",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "Training, validation and testing datasets shall be subject to data governance practices ensuring they are relevant, sufficiently representative, and, to the best extent possible, free of errors and complete with regard to the intended purpose. They shall have the appropriate statistical properties, including as regards the persons or groups of persons on which the high-risk AI system is intended to be used. Datasets shall be examined for possible biases that could affect health and safety or fundamental rights.",
+        "summary": "Mandates representative, bias-examined, error-free datasets and documented data governance for high-risk AI.",
+        "kind": "DATA_GOVERNANCE",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-11",
+        "name": "EU AI Act Art. 11 — Technical Documentation",
+        "description": "Requires comprehensive pre-market technical documentation per Annex IV.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 11",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "Before placing a high-risk AI system on the market or putting it into service, providers shall draw up technical documentation containing at minimum the information required by Annex IV, in a manner to demonstrate compliance with the requirements of Chapter III Section 2 and provide national competent authorities and notified bodies with the necessary information to assess compliance.",
+        "summary": "Requires comprehensive pre-market technical documentation per Annex IV.",
+        "kind": "DOCUMENTATION",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-12",
+        "name": "EU AI Act Art. 12 — Record-keeping and Automatic Logging",
+        "description": "Mandates automatic event logging to support lifecycle traceability and post-market monitoring.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 12",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "High-risk AI systems shall technically allow for the automatic recording of events (logs) over the duration of the lifetime of the system. Logging capabilities shall ensure a level of traceability of the AI system's functioning throughout its lifecycle appropriate to the intended purpose of the system, in particular for identifying risks and substantial modifications, and facilitating post-market monitoring.",
+        "summary": "Mandates automatic event logging to support lifecycle traceability and post-market monitoring.",
+        "kind": "MONITORING",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-13",
+        "name": "EU AI Act Art. 13 — Transparency and Provision of Information to Deployers",
+        "description": "Requires transparent AI output interpretation and complete instructions for use for high-risk AI.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 13",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "High-risk AI systems shall be designed and developed in such a way to ensure that their operation is sufficiently transparent to enable deployers to interpret the system's output and use it appropriately. Providers shall ensure that high-risk AI systems are accompanied by instructions for use in appropriate digital format including information on the intended purpose, level of accuracy and performance, known limitations, and circumstances in which the AI system may lead to errors.",
+        "summary": "Requires transparent AI output interpretation and complete instructions for use for high-risk AI.",
+        "kind": "TRANSPARENCY",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-14",
+        "name": "EU AI Act Art. 14 — Human Oversight",
+        "description": "Mandates design that enables natural persons to monitor, understand, and override high-risk AI decisions.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 14",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "High-risk AI systems shall be designed and developed in such a way, including with appropriate human-machine interface tools, that they can be effectively overseen by natural persons during the period in which the AI system is in use. Natural persons shall be able to understand the capacities and limitations of the high-risk AI system, be aware of automation bias, correctly interpret its output, decide not to use it, intervene on or interrupt its operation, and where applicable, decide not to make use of the decision issued.",
+        "summary": "Mandates design that enables natural persons to monitor, understand, and override high-risk AI decisions.",
+        "kind": "HUMAN_OVERSIGHT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-15",
+        "name": "EU AI Act Art. 15 — Accuracy, Robustness, and Cybersecurity",
+        "description": "Requires quantified accuracy benchmarks, adversarial robustness, and cybersecurity measures for high-risk AI.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 15",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "High-risk AI systems shall be designed and developed in such a way that they achieve, in the light of their intended purpose, an appropriate level of accuracy, robustness, and cybersecurity, and perform consistently in those respects throughout their lifecycle. Resilience measures shall address the performance against manipulation by third parties, technical measures for addressing model vulnerabilities, and back-up and fail-safe plans.",
+        "summary": "Requires quantified accuracy benchmarks, adversarial robustness, and cybersecurity measures for high-risk AI.",
+        "kind": "QUALITY_MANAGEMENT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-euai-art-17",
+        "name": "EU AI Act Art. 17 — Quality Management System",
+        "description": "Mandates a documented quality management system covering the full AI lifecycle.",
+        "source": {
+          "framework": "EU_AI_ACT",
+          "article": "Art. 17",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689",
+          "version": "2024/1689"
+        },
+        "requirement_text": "Providers of high-risk AI systems shall put a quality management system in place that ensures compliance with this Regulation. The system shall cover all phases of the AI lifecycle, including strategy and accountability, design and development controls, data governance procedures, post-market monitoring, incident reporting, and documentation retention.",
+        "summary": "Mandates a documented quality management system covering the full AI lifecycle.",
+        "kind": "QUALITY_MANAGEMENT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-5",
+        "name": "GDPR Art. 5 — Data Processing Principles",
+        "description": "Establishes the six core data processing principles: lawfulness, purpose limitation, minimisation, accuracy, storage limitation, and security.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 5",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "Personal data shall be processed lawfully, fairly and in a transparent manner (lawfulness, fairness, transparency); collected for specified, explicit and legitimate purposes and not further processed in incompatible ways (purpose limitation); adequate, relevant and limited to what is necessary (data minimisation); accurate and kept up to date (accuracy); kept in a form permitting identification no longer than necessary (storage limitation); and processed with appropriate security (integrity and confidentiality).",
+        "summary": "Establishes the six core data processing principles: lawfulness, purpose limitation, minimisation, accuracy, storage limitation, and security.",
+        "kind": "DATA_GOVERNANCE",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-6",
+        "name": "GDPR Art. 6 — Lawful Basis for Processing Personal Data",
+        "description": "Requires a documented legal basis for any personal data processing by the AI system.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 6",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "Processing of personal data shall be lawful only if at least one of the following applies: the data subject has given consent; processing is necessary for the performance of a contract; processing is necessary for compliance with a legal obligation; processing is necessary to protect vital interests; processing is necessary for a task carried out in the public interest or in exercise of official authority; or processing is necessary for the legitimate interests of the controller, except where overridden by the data subject's fundamental rights.",
+        "summary": "Requires a documented legal basis for any personal data processing by the AI system.",
+        "kind": "DATA_GOVERNANCE",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-9",
+        "name": "GDPR Art. 9 — Processing of Special Categories of Personal Data",
+        "description": "Prohibits processing special-category sensitive data without an explicit GDPR Art. 9(2) exemption.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 9",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "Processing of personal data revealing racial or ethnic origin, political opinions, religious or philosophical beliefs, or trade union membership, and the processing of genetic data, biometric data for the purpose of uniquely identifying a natural person, data concerning health or data concerning a natural person's sex life or sexual orientation shall be prohibited, unless one of the specific exemptions in Art. 9(2) applies (e.g. explicit consent, vital interests, substantial public interest, medical purposes).",
+        "summary": "Prohibits processing special-category sensitive data without an explicit GDPR Art. 9(2) exemption.",
+        "kind": "DATA_PROTECTION",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-22",
+        "name": "GDPR Art. 22 — Automated Individual Decision-making Including Profiling",
+        "description": "Entitles data subjects to human review of solely automated decisions with significant effects; mandates explanation and contestation rights.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 22",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "The data subject shall have the right not to be subject to a decision based solely on automated processing, including profiling, which produces legal effects concerning or similarly significantly affects the data subject. Exemptions exist for contract necessity, legal authorisation, or explicit consent, but in those cases the controller must implement suitable measures to safeguard the data subject's rights including the right to obtain human intervention, to express their point of view, and to contest the decision.",
+        "summary": "Entitles data subjects to human review of solely automated decisions with significant effects; mandates explanation and contestation rights.",
+        "kind": "HUMAN_OVERSIGHT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-25",
+        "name": "GDPR Art. 25 — Data Protection by Design and by Default",
+        "description": "Mandates privacy by design architecture and data-minimising default configurations for AI systems processing personal data.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 25",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "Taking into account the state of the art, cost of implementation, and the nature, scope, context and purposes of processing, the controller shall implement appropriate technical and organisational measures to implement data-protection principles effectively and integrate the necessary safeguards into the processing in order to meet the requirements of this Regulation. By default, only personal data which are necessary for each specific purpose of the processing are processed.",
+        "summary": "Mandates privacy by design architecture and data-minimising default configurations for AI systems processing personal data.",
+        "kind": "DESIGN",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-gdpr-art-35",
+        "name": "GDPR Art. 35 — Data Protection Impact Assessment (DPIA)",
+        "description": "Requires a DPIA before deploying AI systems that systematically profile individuals, process sensitive data at scale, or monitor public spaces.",
+        "source": {
+          "framework": "GDPR",
+          "article": "Art. 35",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32016R0679",
+          "version": "2016/679"
+        },
+        "requirement_text": "Where a type of processing is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall, prior to the processing, carry out an assessment of the impact of the envisaged processing operations on the protection of personal data. A single assessment may address a set of similar processing operations. The assessment is mandatory for systematic and extensive evaluation of personal aspects through automated processing including profiling; for processing special categories of personal data at large scale; and for systematic monitoring of publicly accessible areas on a large scale.",
+        "summary": "Requires a DPIA before deploying AI systems that systematically profile individuals, process sensitive data at scale, or monitor public spaces.",
+        "kind": "RISK_MANAGEMENT",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-eba-demographic_bias",
+        "name": "EBA ML — Demographic Bias Testing in Credit Scoring",
+        "description": "Mandates systematic demographic bias testing and documentation of mitigation for ML credit scoring models.",
+        "source": {
+          "framework": "EBA_ML_GUIDELINES",
+          "article": "§ 4.3",
+          "uri": "https://www.eba.europa.eu/publications-and-media/press-releases/eba-publishes-report-machine-learning-credit-risk",
+          "version": "2023"
+        },
+        "requirement_text": "Institutions should test ML credit scoring models for potential demographic bias, including disparate impact across groups defined by protected characteristics. Testing should cover: performance metric gaps across demographic segments; proxy discrimination through correlated features; intersectional bias analysis where feasible; and documentation of bias mitigation measures and residual disparities. Results should be disclosed to model validation functions and senior management.",
+        "summary": "Mandates systematic demographic bias testing and documentation of mitigation for ML credit scoring models.",
+        "kind": "TESTING",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-eba-ml_explainability",
+        "name": "EBA ML — Explainability for Credit Decisions",
+        "description": "Requires GDPR Art. 22-compliant individual and global explanations for ML-driven credit decisions, expressed in applicant-understandable terms.",
+        "source": {
+          "framework": "EBA_ML_GUIDELINES",
+          "article": "§ 4.5",
+          "uri": "https://www.eba.europa.eu/publications-and-media/press-releases/eba-publishes-report-machine-learning-credit-risk",
+          "version": "2023"
+        },
+        "requirement_text": "Institutions using ML models for credit decisions should be able to provide meaningful explanations to data subjects in accordance with GDPR Article 22. Explanations should identify the most influential factors in the decision, be expressed in terms understandable to the applicant, be consistent and reproducible, and be subject to quality controls. Both global model explanations and local (individual) explanations should be available.",
+        "summary": "Requires GDPR Art. 22-compliant individual and global explanations for ML-driven credit decisions, expressed in applicant-understandable terms.",
+        "kind": "TRANSPARENCY",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-eba-model_validation",
+        "name": "EBA ML — Independent Model Validation",
+        "description": "Mandates independent validation of credit ML models across data quality, performance stability, demographic consistency, and ongoing monitoring.",
+        "source": {
+          "framework": "EBA_ML_GUIDELINES",
+          "article": "§ 4.2",
+          "uri": "https://www.eba.europa.eu/publications-and-media/press-releases/eba-publishes-report-machine-learning-credit-risk",
+          "version": "2023"
+        },
+        "requirement_text": "Institutions should ensure that ML models used in credit risk are subject to independent model validation covering: conceptual soundness of the modelling approach; quality and representativeness of training and validation data; model performance on hold-out and out-of-time samples; stability of performance across demographic segments; ongoing performance monitoring and backtesting; and assessment of model limitations and assumptions.",
+        "summary": "Mandates independent validation of credit ML models across data quality, performance stability, demographic consistency, and ongoing monitoring.",
+        "kind": "TESTING",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-eucharter-art-21",
+        "name": "EU Charter Art. 21 — Non-discrimination",
+        "description": "Prohibits AI-driven discrimination on 18 grounds including national minority membership, language, and genetic features — extending beyond GDPR Art. 9 special categories.",
+        "source": {
+          "framework": "EU_CHARTER",
+          "article": "Art. 21",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:12012P/TXT",
+          "version": "2000/C 364/01"
+        },
+        "requirement_text": "Any discrimination based on any ground such as sex, race, colour, ethnic or social origin, genetic features, language, religion or belief, political or any other opinion, membership of a national minority, property, birth, disability, age or sexual orientation shall be prohibited. Within the scope of the Treaties and without prejudice to any of their specific provisions, any discrimination on grounds of nationality shall be prohibited.",
+        "summary": "Prohibits AI-driven discrimination on 18 grounds including national minority membership, language, and genetic features — extending beyond GDPR Art. 9 special categories.",
+        "kind": "DESIGN",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      },
+      {
+        "id": "req-eucharter-art-47",
+        "name": "EU Charter Art. 47 — Right to Effective Remedy and Fair Trial",
+        "description": "Requires that persons subject to AI-driven decisions that affect their EU law rights have access to effective judicial redress — operationalised through explainability and contestation mechanisms.",
+        "source": {
+          "framework": "EU_CHARTER",
+          "article": "Art. 47",
+          "uri": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:12012P/TXT",
+          "version": "2000/C 364/01"
+        },
+        "requirement_text": "Everyone whose rights and freedoms guaranteed by the law of the Union are violated has the right to an effective remedy before a tribunal in compliance with the conditions laid down in this Article. Everyone is entitled to a fair and public hearing within a reasonable time by an independent and impartial tribunal previously established by law. Everyone shall have the possibility of being advised, defended and represented.",
+        "summary": "Requires that persons subject to AI-driven decisions that affect their EU law rights have access to effective judicial redress — operationalised through explainability and contestation mechanisms.",
+        "kind": "TRANSPARENCY",
+        "applicability_status": "APPLICABLE",
+        "related_requirements": []
+      }
+    ],
+    "affected_groups": [
+      {
+        "id": "group-affected_persons",
+        "name": "Affected Persons (Non-users)",
+        "description": "Natural persons who are subject to decisions or outputs of an AI system without directly interacting with it — e.g. persons assessed by credit scoring or predictive policing AI.",
+        "group_kind": "DEMOGRAPHIC",
+        "group_kind_value": null,
+        "group_role": "DECISION_SUBJECT",
+        "group_role_value": null,
+        "vulnerability": null,
+        "vulnerability_value": null,
+        "rationale": "Consumer loan applicants are assessed by the system and may be affected by the repayment-risk signal despite not using the system themselves."
+      }
+    ],
+    "vulnerable_groups": [
+      {
+        "id": "group-economically_disadvantaged",
+        "name": "Economically Disadvantaged Persons",
+        "description": "Persons in situations of financial hardship or socio-economic dependency, identified in EU AI Act Art. 5 as a group whose vulnerabilities must not be exploited.",
+        "group_kind": "VULNERABLE",
+        "group_kind_value": null,
+        "group_role": "TARGET_SUBJECT",
+        "group_role_value": null,
+        "vulnerability": "ECONOMIC_DEPENDENCY",
+        "vulnerability_value": null,
+        "rationale": "Applicants experiencing financial hardship are in the target population for repayment-risk scoring; monitor for proxies and avoid exploiting financial vulnerability."
+      },
+      {
+        "id": "group-elderly_persons",
+        "name": "Elderly Persons",
+        "description": "Persons of advanced age who may be more susceptible to manipulation, digital exclusion, or automation bias — recognised as vulnerable under EU AI Act Art. 5.",
+        "group_kind": "VULNERABLE",
+        "group_kind_value": null,
+        "group_role": "TARGET_SUBJECT",
+        "group_role_value": null,
+        "vulnerability": "AGE",
+        "vulnerability_value": null,
+        "rationale": "Older applicants may be affected by age-related proxies or unequal performance; assess accessibility and subgroup outcomes."
+      }
+    ],
+    "protected_attributes": [
+      {
+        "id": "attr-gender",
+        "name": "Gender",
+        "semantic_type": "GENDER",
+        "semantic_type_value": null,
+        "attribute_role": "PROTECTED_ATTRIBUTE",
+        "attribute_role_value": null,
+        "observability": "SELF_REPORTED",
+        "use_permissions": [
+          "FAIRNESS_TESTING",
+          "ROBUSTNESS_SLICING",
+          "EXCLUDED_FROM_MODEL"
+        ],
+        "rationale": "The OKF identifies gender as a protected characteristic relevant to credit; retain only for lawful fairness testing and exclude from model inputs."
+      },
+      {
+        "id": "attr-nationality",
+        "name": "Nationality",
+        "semantic_type": "NATIONALITY",
+        "semantic_type_value": null,
+        "attribute_role": "PROXY_ATTRIBUTE",
+        "attribute_role_value": null,
+        "observability": "DIRECT",
+        "use_permissions": [
+          "FAIRNESS_TESTING",
+          "ROBUSTNESS_SLICING"
+        ],
+        "rationale": "Nationality can proxy race/ethnicity and correlate with language access; assess disparity impacts without presuming it is used as an input."
+      },
+      {
+        "id": "attr-socioeconomic_status",
+        "name": "Socioeconomic Status",
+        "semantic_type": "SOCIOECONOMIC_STATUS",
+        "semantic_type_value": null,
+        "attribute_role": "PROXY_ATTRIBUTE",
+        "attribute_role_value": null,
+        "observability": "DERIVED",
+        "use_permissions": [
+          "FAIRNESS_TESTING",
+          "ROBUSTNESS_SLICING"
+        ],
+        "rationale": "Socioeconomic status can proxy protected characteristics and is directly relevant to financial vulnerability; test for proxy and subgroup effects."
+      }
+    ],
+    "foreseeable_misuse": [
+      {
+        "id": "misuse-automation_bias_high_stakes",
+        "name": "Automation Bias in High-stakes Decisions",
+        "misuse_kind": "AUTOMATION_BIAS",
+        "misuse_kind_value": null,
+        "intentionality": "NEGLIGENT",
+        "likelihood": "LIKELY",
+        "impact": "HIGH",
+        "rationale": "Loan officers may treat the system's repayment-risk signal as a final decision, undermining meaningful human review."
+      },
+      {
+        "id": "misuse-proxy_discrimination_credit",
+        "name": "Proxy Discrimination in Credit Scoring",
+        "misuse_kind": "OUT_OF_SCOPE_USE",
+        "misuse_kind_value": null,
+        "intentionality": "ACCIDENTAL",
+        "likelihood": "LIKELY",
+        "impact": "HIGH",
+        "rationale": "Correlated inputs such as location or spending patterns may produce disparate outcomes even if protected attributes are excluded."
+      }
+    ],
+    "risk_classification": {
+      "risk_level": "HIGH",
+      "risk_level_value": null,
+      "classification_status": "PRELIMINARY",
+      "rationale": "Consumer-loan repayment-risk classification evaluates the creditworthiness of natural persons; the OKF maps creditworthiness scoring to EU AI Act Annex III §5(b). This is a preliminary high-risk classification, subject to confirming intended purpose and any exceptions."
+    },
+    "human_oversight": {
+      "oversight_mode": "HUMAN_IN_THE_LOOP",
+      "oversight_mode_value": null,
+      "overseer_roles": [
+        "DEPLOYER",
+        "HUMAN_OVERSIGHT_OPERATOR",
+        "COMPLIANCE_OWNER"
+      ],
+      "intervention_points": [
+        "OUTPUT_REVIEW",
+        "DECISION_APPROVAL",
+        "ESCALATION_REVIEW"
+      ],
+      "authority": [
+        "REQUEST_EXPLANATION",
+        "APPROVE",
+        "REJECT",
+        "OVERRIDE_OUTPUT",
+        "ESCALATE",
+        "SUSPEND_SERVICE"
+      ],
+      "availability": "BUSINESS_HOURS",
+      "escalation_channels": [
+        "HUMAN_REVIEW",
+        "COMPLIANCE_REVIEW",
+        "LEGAL_REVIEW"
+      ],
+      "limitations": [
+        "Treat the signal as advisory; a human loan officer must make and document the lending decision.",
+        "Validate human reviewers' authority, training, independence, and ability to depart from the signal."
+      ],
+      "rationale": "Loan officers should review the signal and underlying explanation before making an individual lending decision, with authority to reject, override, or escalate it; this also mitigates automation bias and supports meaningful human intervention."
+    }
+  },
+  "analysis_datasets": {
+    "loan_dataset": {
+      "scope": "TRAINING",
+      "attributes": [
+        {
+          "id": "attr-age",
+          "name": "Age",
+          "semantic_type": "AGE",
+          "semantic_type_value": null,
+          "attribute_role": "STRATIFICATION_ATTRIBUTE",
+          "attribute_role_value": null,
+          "observability": "DIRECT",
+          "use_permissions": [
+            "MODEL_INPUT",
+            "FAIRNESS_TESTING",
+            "ROBUSTNESS_SLICING"
+          ],
+          "rationale": "Age is explicitly present (sample values 25–61) and is relevant to the project’s elderly-applicant group; retain for justified model use and evaluate age-group performance and representation."
+        },
+        {
+          "id": "attr-gender",
+          "name": "Gender",
+          "semantic_type": "GENDER",
+          "semantic_type_value": null,
+          "attribute_role": "PROTECTED_ATTRIBUTE",
+          "attribute_role_value": null,
+          "observability": "SELF_REPORTED",
+          "use_permissions": [
+            "FAIRNESS_TESTING",
+            "ROBUSTNESS_SLICING",
+            "EXCLUDED_FROM_MODEL"
+          ],
+          "rationale": "Gender is an explicit field with Female and Male sample values and is listed as protected in the project context; use for permitted fairness analysis, not as a model input."
+        },
+        {
+          "id": "attr-socioeconomic_status",
+          "name": "Socioeconomic Status",
+          "semantic_type": "SOCIOECONOMIC_STATUS",
+          "semantic_type_value": null,
+          "attribute_role": "PROXY_ATTRIBUTE",
+          "attribute_role_value": null,
+          "observability": "DERIVED",
+          "use_permissions": [
+            "FAIRNESS_TESTING",
+            "ROBUSTNESS_SLICING"
+          ],
+          "rationale": "Income, expenses, employment, housing, location, credit-score and debt fields can jointly act as socioeconomic proxies; test for proxy and subgroup effects, and avoid treating inferred socioeconomic status as directly observed."
+        },
+        {
+          "id": "attr-creditworthiness_score",
+          "name": "Creditworthiness Score",
+          "semantic_type": "OTHER",
+          "semantic_type_value": "CREDIT_SCORE",
+          "attribute_role": "TARGET",
+          "attribute_role_value": null,
+          "observability": "DERIVED",
+          "use_permissions": [
+            "EVALUATION",
+            "FAIRNESS_TESTING",
+            "ROBUSTNESS_SLICING",
+            "RESTRICTED"
+          ],
+          "rationale": "Credit_Score is present and the project concerns repayment-risk signaling; treat this derived score as a restricted target/evaluation field unless its actual data lineage establishes a different role."
+        }
+      ],
+      "objectives": [
+        {
+          "name": "Required-field completeness",
+          "description": "Measure non-null completeness for fields necessary to the risk-signal purpose, separately by gender, age band and socioeconomic proxy group; document and investigate differential missingness.",
+          "metric": {
+            "id": "metric-data-completeness",
+            "name": "Dataset Completeness",
+            "description": "Fraction of required values that are present (non-null) in the dataset. A value ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.95
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-gdpr-art-5"
+          ],
+          "rationale": "Required for the intended purpose under the project’s high-risk Art. 10 context; the numeric threshold is a proposed tolerance, not an Art. 10 prescribed value."
+        },
+        {
+          "name": "Field and target accuracy",
+          "description": "Validate source fidelity and plausible domains: Age 0–120, nonnegative income/expense/debt/loan amounts, positive loan term, Default_Risk in [0,1], and Loan_Approval_Status in {0,1}; reconcile labels against authoritative records.",
+          "metric": {
+            "id": "metric-data-accuracy",
+            "name": "Data Accuracy / Correctness Rate",
+            "description": "Fraction of data values that correctly represent the real-world entity they desc",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.99
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-gdpr-art-5"
+          ],
+          "rationale": "Art. 10 and GDPR accuracy principles apply; the proposed threshold is a conservative operational target and should be confirmed against source data quality."
+        },
+        {
+          "name": "Cross-field consistency",
+          "description": "Ensure at least 99% of records satisfy documented domain and cross-field checks, including risk-score bounds, binary status values, nonnegative financial amounts, and consistency between application outcomes and source records; do not assume approval status is an in-scope model target.",
+          "metric": {
+            "id": "metric-data-consistency",
+            "name": "Data Consistency Rate",
+            "description": "Fraction of records that satisfy all defined cross-field and referential integri",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.99
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10"
+          ],
+          "rationale": "Inconsistent financial features and outcome fields can distort repayment-risk training and produce biased results; Art. 10 calls for error-free data to the best extent possible."
+        },
+        {
+          "name": "Representativeness across affected groups",
+          "description": "Compare dataset proportions with the intended EU deployment population; calculate the maximum absolute proportion gap for gender, age/elderly, socioeconomic and relevant location strata, and investigate intersectional gaps.",
+          "metric": {
+            "id": "metric-representativeness-gap",
+            "name": "Demographic Representativeness Gap",
+            "description": "Maximum absolute difference between the proportion of a demographic group in the",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "Δ%",
+              "name": "proportion difference"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.05
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-eba-demographic_bias",
+            "req-gdpr-art-35"
+          ],
+          "rationale": "The dataset includes gender, age, geographic and socioeconomic proxy fields; representativeness must be assessed against an external target-population reference. A 0.05 gap is a proposed trigger/acceptance threshold, not a statutory limit."
+        },
+        {
+          "name": "Demographic disparity in risk outcomes",
+          "description": "Measure inequality in model benefit/outcome distributions across gender, age and socioeconomic proxy groups using held-out labels and predictions; document intersections, investigate values above 0.1, and record mitigations and residual disparities.",
+          "metric": {
+            "id": "metric-theil-index",
+            "name": "Theil Index (Between-group)",
+            "description": "Information-theoretic inequality measure of benefit distribution across demograp",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "T",
+              "name": "nats"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": null,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.1
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-eba-demographic_bias"
+          ],
+          "rationale": "The project context includes applicable EBA demographic-bias testing and the dataset contains protected/proxy attributes; OKF notes Theil values above 0.1 signal substantial inequality."
+        },
+        {
+          "name": "Categorical target balance",
+          "description": "If Loan_Approval_Status is confirmed as a permitted historical training/evaluation label (rather than a target that automates approvals), maintain a minority-to-majority label ratio of at least 0.1 and report the class counts. For a continuous Default_Risk target, assess its distribution separately.",
+          "metric": {
+            "id": "metric-label-balance-ratio",
+            "name": "Label Balance Ratio",
+            "description": "Ratio of the minority class count to the majority class count in a classificatio",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "ratio",
+              "name": "minority/majority ratio"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.1
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "RECOMMENDED",
+          "severity": "MEDIUM",
+          "requirements": [
+            "req-euai-art-10"
+          ],
+          "rationale": "The table includes a binary Loan_Approval_Status field, but the project excludes fully automated approval/rejection. Only assess this as a target if its role is approved; the 0.1 threshold follows the OKF's severe-imbalance screening guidance."
+        },
+        {
+          "name": "Re-identification risk before data sharing",
+          "description": "After removing or isolating Applicant_ID and generalizing relevant quasi-identifiers (such as age and City/Town), require k-anonymity of at least 5 before external disclosure or other release; apply stricter access controls to the identifiable training table.",
+          "metric": {
+            "id": "metric-k-anonymity",
+            "name": "k-Anonymity",
+            "description": "Minimum number of records that share the same quasi-identifier combination. k = ",
+            "kind": "PRIMITIVE",
+            "scale": "ORDINAL",
+            "unit": {
+              "symbol": "k",
+              "name": "equivalence class size"
+            },
+            "range": {
+              "lower": 1.0,
+              "upper": null,
+              "discrete": true,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 5.0
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "RECOMMENDED",
+          "severity": "HIGH",
+          "requirements": [
+            "req-gdpr-art-5",
+            "req-gdpr-art-25"
+          ],
+          "rationale": "Applicant_ID appears directly identifying and demographic/location/financial combinations can re-identify applicants; k ≥ 5 is a proposed disclosure safeguard, not a universal GDPR threshold."
+        }
+      ]
+    }
+  },
+  "analysis_models": {
+    "loan-approval-classifier": {
+      "objectives": [
+        {
+          "name": "Group error-rate parity",
+          "description": "On held-out applicants, measure maximum TPR/FPR difference across gender, age and socioeconomic-proxy groups; investigate intersectional gaps and proxy discrimination.",
+          "metric": {
+            "id": "metric-equalized-odds-difference",
+            "name": "Equalized Odds Difference",
+            "description": "Maximum absolute difference in true positive rate and false positive rate across",
+            "kind": "COMPOSITE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "Δ",
+              "name": "rate difference"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.05
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-eucharter-art-21",
+            "req-eba-demographic_bias"
+          ],
+          "rationale": "Addresses protected-group disparity and proxy discrimination; use gender only for permitted fairness analysis, not as a model input."
+        },
+        {
+          "name": "Discriminative performance",
+          "description": "Evaluate ranking quality on a representative, held-out applicant set using the approved target and document subgroup results.",
+          "metric": {
+            "id": "metric-auc-roc",
+            "name": "AUC-ROC (Area Under ROC Curve)",
+            "description": "Area under the Receiver Operating Characteristic curve. Measures the model's abi",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.85
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies AUC ≥ 0.85 as a common minimum for high-risk credit scoring; confirm against the approved target and deployment population."
+        },
+        {
+          "name": "Adversarial robustness",
+          "description": "Measure accuracy on perturbed but valid applicant inputs under documented attack budgets, detecting crafted inputs that alter the risk classification.",
+          "metric": {
+            "id": "metric-adversarial-accuracy",
+            "name": "Adversarial Accuracy",
+            "description": "Model accuracy on adversarially perturbed inputs. Measures how much accuracy deg",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.8
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "Addresses adversarial-input misuse and Art. 15 robustness; attack budget and feature-validity constraints must be fixed in the protocol."
+        },
+        {
+          "name": "Traceable explanations for human review",
+          "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+          "metric": {
+            "id": "metric-decision-coverage",
+            "name": "Decision Coverage (Traceable Predictions)",
+            "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.95
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-13",
+            "req-euai-art-14",
+            "req-gdpr-art-22",
+            "req-eucharter-art-47"
+          ],
+          "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+        },
+        {
+          "name": "Probability calibration",
+          "description": "On held-out applicants, verify predicted repayment-risk probabilities are calibrated and report calibration by demographic groups.",
+          "metric": {
+            "id": "metric-expected-calibration-error",
+            "name": "Expected Calibration Error (ECE)",
+            "description": "Weighted average absolute difference between predicted confidence and empirical ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "ECE",
+              "name": "calibration error"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.02
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "RECOMMENDED",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies ECE below 0.02 as generally acceptable for high-stakes uses; confirm binning and calibration data."
+        },
+        {
+          "name": "Membership-inference resistance",
+          "description": "Test whether an attacker can infer applicant-record membership in the training data from model outputs; keep attack AUC near chance.",
+          "metric": {
+            "id": "metric-membership-inference-auc",
+            "name": "Membership Inference Attack AUC",
+            "description": "AUC of a membership inference attack classifier distinguishing training members ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.5,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.6
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-gdpr-art-5"
+          ],
+          "rationale": "The training data contains applicant identifiers and demographic/financial fields; the OKF says attack AUC above 0.6 warrants investigation."
+        }
+      ]
+    },
+    "store://loan-app/model/sklearn/loan-approval-classifier:81f1811cff17415c9c203d8953e47b5c": {
+      "objectives": [
+        {
+          "name": "Group error-rate parity",
+          "description": "On held-out applicants, measure maximum TPR/FPR difference across gender, age and socioeconomic-proxy groups; investigate intersectional gaps and proxy discrimination.",
+          "metric": {
+            "id": "metric-equalized-odds-difference",
+            "name": "Equalized Odds Difference",
+            "description": "Maximum absolute difference in true positive rate and false positive rate across",
+            "kind": "COMPOSITE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "Δ",
+              "name": "rate difference"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.05
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-eucharter-art-21",
+            "req-eba-demographic_bias"
+          ],
+          "rationale": "Addresses protected-group disparity and proxy discrimination; use gender only for permitted fairness analysis, not as a model input."
+        },
+        {
+          "name": "Discriminative performance",
+          "description": "Evaluate ranking quality on a representative, held-out applicant set using the approved target and document subgroup results.",
+          "metric": {
+            "id": "metric-auc-roc",
+            "name": "AUC-ROC (Area Under ROC Curve)",
+            "description": "Area under the Receiver Operating Characteristic curve. Measures the model's abi",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.85
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies AUC ≥ 0.85 as a common minimum for high-risk credit scoring; confirm against the approved target and deployment population."
+        },
+        {
+          "name": "Adversarial robustness",
+          "description": "Measure accuracy on perturbed but valid applicant inputs under documented attack budgets, detecting crafted inputs that alter the risk classification.",
+          "metric": {
+            "id": "metric-adversarial-accuracy",
+            "name": "Adversarial Accuracy",
+            "description": "Model accuracy on adversarially perturbed inputs. Measures how much accuracy deg",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.8
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "Addresses adversarial-input misuse and Art. 15 robustness; attack budget and feature-validity constraints must be fixed in the protocol."
+        },
+        {
+          "name": "Traceable explanations for human review",
+          "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+          "metric": {
+            "id": "metric-decision-coverage",
+            "name": "Decision Coverage (Traceable Predictions)",
+            "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.95
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-13",
+            "req-euai-art-14",
+            "req-gdpr-art-22",
+            "req-eucharter-art-47"
+          ],
+          "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+        },
+        {
+          "name": "Probability calibration",
+          "description": "On held-out applicants, verify predicted repayment-risk probabilities are calibrated and report calibration by demographic groups.",
+          "metric": {
+            "id": "metric-expected-calibration-error",
+            "name": "Expected Calibration Error (ECE)",
+            "description": "Weighted average absolute difference between predicted confidence and empirical ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "ECE",
+              "name": "calibration error"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.02
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "RECOMMENDED",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies ECE below 0.02 as generally acceptable for high-stakes uses; confirm binning and calibration data."
+        },
+        {
+          "name": "Membership-inference resistance",
+          "description": "Test whether an attacker can infer applicant-record membership in the training data from model outputs; keep attack AUC near chance.",
+          "metric": {
+            "id": "metric-membership-inference-auc",
+            "name": "Membership Inference Attack AUC",
+            "description": "AUC of a membership inference attack classifier distinguishing training members ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.5,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.6
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-gdpr-art-5"
+          ],
+          "rationale": "The training data contains applicant identifiers and demographic/financial fields; the OKF says attack AUC above 0.6 warrants investigation."
+        }
+      ]
+    },
+    "store://loan-app/model/sklearn/loan-approval-classifier:3131e45ec2b84cd5a290cd4ddfae0f24": {
+      "objectives": [
+        {
+          "name": "Group error-rate parity",
+          "description": "On held-out applicants, measure maximum TPR/FPR difference across gender, age and socioeconomic-proxy groups; investigate intersectional gaps and proxy discrimination.",
+          "metric": {
+            "id": "metric-equalized-odds-difference",
+            "name": "Equalized Odds Difference",
+            "description": "Maximum absolute difference in true positive rate and false positive rate across",
+            "kind": "COMPOSITE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "Δ",
+              "name": "rate difference"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.05
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-10",
+            "req-eucharter-art-21",
+            "req-eba-demographic_bias"
+          ],
+          "rationale": "Addresses protected-group disparity and proxy discrimination; use gender only for permitted fairness analysis, not as a model input."
+        },
+        {
+          "name": "Discriminative performance",
+          "description": "Evaluate ranking quality on a representative, held-out applicant set using the approved target and document subgroup results.",
+          "metric": {
+            "id": "metric-auc-roc",
+            "name": "AUC-ROC (Area Under ROC Curve)",
+            "description": "Area under the Receiver Operating Characteristic curve. Measures the model's abi",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.85
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies AUC ≥ 0.85 as a common minimum for high-risk credit scoring; confirm against the approved target and deployment population."
+        },
+        {
+          "name": "Adversarial robustness",
+          "description": "Measure accuracy on perturbed but valid applicant inputs under documented attack budgets, detecting crafted inputs that alter the risk classification.",
+          "metric": {
+            "id": "metric-adversarial-accuracy",
+            "name": "Adversarial Accuracy",
+            "description": "Model accuracy on adversarially perturbed inputs. Measures how much accuracy deg",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.8
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "Addresses adversarial-input misuse and Art. 15 robustness; attack budget and feature-validity constraints must be fixed in the protocol."
+        },
+        {
+          "name": "Traceable explanations for human review",
+          "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+          "metric": {
+            "id": "metric-decision-coverage",
+            "name": "Decision Coverage (Traceable Predictions)",
+            "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "%",
+              "name": "percent"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "GEQ",
+              "value": 0.95
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-13",
+            "req-euai-art-14",
+            "req-gdpr-art-22",
+            "req-eucharter-art-47"
+          ],
+          "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+        },
+        {
+          "name": "Probability calibration",
+          "description": "On held-out applicants, verify predicted repayment-risk probabilities are calibrated and report calibration by demographic groups.",
+          "metric": {
+            "id": "metric-expected-calibration-error",
+            "name": "Expected Calibration Error (ECE)",
+            "description": "Weighted average absolute difference between predicted confidence and empirical ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "ECE",
+              "name": "calibration error"
+            },
+            "range": {
+              "lower": 0.0,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.02
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "RECOMMENDED",
+          "severity": "HIGH",
+          "requirements": [
+            "req-euai-art-15"
+          ],
+          "rationale": "The OKF identifies ECE below 0.02 as generally acceptable for high-stakes uses; confirm binning and calibration data."
+        },
+        {
+          "name": "Membership-inference resistance",
+          "description": "Test whether an attacker can infer applicant-record membership in the training data from model outputs; keep attack AUC near chance.",
+          "metric": {
+            "id": "metric-membership-inference-auc",
+            "name": "Membership Inference Attack AUC",
+            "description": "AUC of a membership inference attack classifier distinguishing training members ",
+            "kind": "PRIMITIVE",
+            "scale": "RATIO",
+            "unit": {
+              "symbol": "AUC",
+              "name": "area"
+            },
+            "range": {
+              "lower": 0.5,
+              "upper": 1.0,
+              "discrete": false,
+              "categories": null
+            }
+          },
+          "condition": {
+            "threshold": {
+              "operator": "LEQ",
+              "value": 0.6
+            },
+            "range": null,
+            "categorical": null,
+            "statistical": null
+          },
+          "priority": "MANDATORY",
+          "severity": "HIGH",
+          "requirements": [
+            "req-gdpr-art-5"
+          ],
+          "rationale": "The training data contains applicant identifiers and demographic/financial fields; the OKF says attack AUC above 0.6 warrants investigation."
+        }
+      ]
+    }
+  }
+}
