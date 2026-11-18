@@ -9,6 +9,7 @@ compliance analysis using the compliance AI agent framework. The scenario contai
 - the generated compliance evaluator for the dataset (``compliance_report.py``).
 - the original version of the source code for the classifier training (``loan_approva_train_original.py``).
 - the modified version of the source code for the classifier training (``loan_approva_train.py``) to incorporate the necessary compliance metrics.
+- the generated evaluator definitions driving the agents (``evaluation/``).
 - the generated compliance evaluator for the model (``loan_model_compliance.py``).
 
 

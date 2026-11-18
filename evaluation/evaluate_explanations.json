@@ -1,0 +1,391 @@
+{
+  "request": {
+    "project": "loan-app3",
+    "entity_kind": "model",
+    "entity": "loan-approval-classifier",
+    "entity_version": null,
+    "objective_ref": "model:loan-approval-classifier#metric-decision-coverage",
+    "objective": {
+      "name": "Traceable explanations for human review",
+      "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+      "metric": {
+        "id": "metric-decision-coverage",
+        "name": "Decision Coverage (Traceable Predictions)",
+        "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+        "kind": "PRIMITIVE",
+        "scale": "RATIO",
+        "unit": {
+          "symbol": "%",
+          "name": "percent"
+        },
+        "range": {
+          "lower": 0.0,
+          "upper": 1.0,
+          "discrete": false
+        }
+      },
+      "condition": {
+        "threshold": {
+          "operator": "GEQ",
+          "value": 0.95
+        }
+      },
+      "priority": "MANDATORY",
+      "severity": "HIGH",
+      "requirements": [
+        "req-euai-art-13",
+        "req-euai-art-14",
+        "req-gdpr-art-22",
+        "req-eucharter-art-47"
+      ],
+      "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+    },
+    "bindings": {
+      "key": "entity.key: exact newly registered model store URI, matching context.model_key",
+      "version": "entity.version: exact version returned by the training registration",
+      "estimator": "entity.estimator: fitted sklearn Pipeline; read-only predict_proba/classes_",
+      "target": "Loan_Approval_Status",
+      "positive_label": 1,
+      "decision_threshold": 0.9,
+      "evaluation_data": "context.train/test DataFrames with disjoint original integer row IDs and Applicant_ID",
+      "dataset_key": "store://loan-app3/dataitem/table/loan_dataset:2d76c2b381ec47b9b00e8b7ed78cd234",
+      "context": "Explicit model_key, dataset_key, run_key, implementation_sha256 and feature_columns",
+      "fairness": "Observed Gender; age <30/30-59/>=60; training income tertiles; missing separate; 30 positives AND negatives per group; intersections diagnostic; max across main gaps",
+      "calibration": "10 equal-width bins on [0,1], final upper endpoint included; unchanged model probabilities",
+      "explanations": "Surrogate max_depth=5,min_samples_leaf=10,random_state=42; leaf support>=10; fidelity diagnostic; reviewer access unverified",
+      "membership": "Loss,max/min confidence; balanced seeded member/nonmember sampling; 50/50 stratified attack split seed42; LR attacker; training-only orientation; held-out attack AUC; 200-resample stratified bootstrap diagnostic"
+    },
+    "selected_outputs": {
+      "value": "Overall scalar; group/intersection tables diagnostic"
+    },
+    "computation_guidance": {
+      "supported": true,
+      "status": "available",
+      "metric": {
+        "path": "catalog/metrics/explainability/decision-coverage.md",
+        "id": "metric-decision-coverage",
+        "title": "Decision Coverage (Traceable Predictions)",
+        "description": "Fraction of model predictions for which a traceable decision path or rule-based explanation can be generated. Measures explainability completeness across the prediction space.",
+        "tags": [
+          "metric",
+          "explainability",
+          "coverage",
+          "traceability",
+          "ieee-7001",
+          "eu-hleg-altai"
+        ],
+        "instance": {
+          "id": "metric-decision-coverage",
+          "name": "Decision Coverage (Traceable Predictions)",
+          "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+          "kind": "PRIMITIVE",
+          "scale": "RATIO",
+          "unit": {
+            "symbol": "%",
+            "name": "percent"
+          },
+          "range": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "discrete": false,
+            "categories": null
+          }
+        }
+      },
+      "source_path": "catalog/metrics/explainability/decision-coverage.md",
+      "source_hash": "bf17a29c0e837426f5d24b8b5f3eb3fffd30d37eb4f46a77f4167e64bb6f59ad",
+      "applicability": "Model",
+      "computation_section": "# Computation\n\n```python\nfrom sklearn.tree import DecisionTreeClassifier\nimport numpy as np\n\n# Approach: fit a surrogate decision tree to model predictions\n# Coverage = fraction of test instances whose leaf has >= min_samples\nsurrogate = DecisionTreeClassifier(max_depth=5, min_samples_leaf=10)\nsurrogate.fit(X_train, model.predict(X_train))\n\n# Get leaf indices for test set\nleaf_ids = surrogate.apply(X_test)\nleaf_sizes = np.bincount(surrogate.apply(X_train))\n\nmin_leaf_size = 10  # explanations covering < 10 training samples are unreliable\ntraceable_mask = leaf_sizes[leaf_ids] >= min_leaf_size\ncoverage = traceable_mask.mean()\nprint(f\"Decision Coverage: {coverage:.4f}\")\nprint(f\"Surrogate fidelity: {np.mean(surrogate.predict(X_test) == model.predict(X_test)):.4f}\")\n```",
+      "prose": "# Computation",
+      "code_blocks": [
+        {
+          "language": "python",
+          "source": "from sklearn.tree import DecisionTreeClassifier\nimport numpy as np\n\n# Approach: fit a surrogate decision tree to model predictions\n# Coverage = fraction of test instances whose leaf has >= min_samples\nsurrogate = DecisionTreeClassifier(max_depth=5, min_samples_leaf=10)\nsurrogate.fit(X_train, model.predict(X_train))\n\n# Get leaf indices for test set\nleaf_ids = surrogate.apply(X_test)\nleaf_sizes = np.bincount(surrogate.apply(X_train))\n\nmin_leaf_size = 10  # explanations covering < 10 training samples are unreliable\ntraceable_mask = leaf_sizes[leaf_ids] >= min_leaf_size\ncoverage = traceable_mask.mean()\nprint(f\"Decision Coverage: {coverage:.4f}\")\nprint(f\"Surrogate fidelity: {np.mean(surrogate.predict(X_test) == model.predict(X_test)):.4f}\")"
+        }
+      ],
+      "python_code_blocks": [
+        {
+          "language": "python",
+          "source": "from sklearn.tree import DecisionTreeClassifier\nimport numpy as np\n\n# Approach: fit a surrogate decision tree to model predictions\n# Coverage = fraction of test instances whose leaf has >= min_samples\nsurrogate = DecisionTreeClassifier(max_depth=5, min_samples_leaf=10)\nsurrogate.fit(X_train, model.predict(X_train))\n\n# Get leaf indices for test set\nleaf_ids = surrogate.apply(X_test)\nleaf_sizes = np.bincount(surrogate.apply(X_train))\n\nmin_leaf_size = 10  # explanations covering < 10 training samples are unreliable\ntraceable_mask = leaf_sizes[leaf_ids] >= min_leaf_size\ncoverage = traceable_mask.mean()\nprint(f\"Decision Coverage: {coverage:.4f}\")\nprint(f\"Surrogate fidelity: {np.mean(surrogate.predict(X_test) == model.predict(X_test)):.4f}\")"
+        }
+      ],
+      "bundle_version": "79da8bd1b27a"
+    }
+  },
+  "artifact": {
+    "status": "ready",
+    "source_code": "import json\nimport math\nfrom datetime import datetime, timezone\nfrom typing import Any, Mapping\nimport numpy as np\nimport pandas as pd\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score, roc_auc_score\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\n\ndef evaluate_explanations(entity, context):\n    CONTRACT = json.loads('{\"project\": \"loan-app3\", \"entity\": \"loan-approval-classifier\", \"specification_model_key\": \"store://loan-app3/model/sklearn/loan-approval-classifier:81f1811cff17415c9c203d8953e47b5c\", \"specification_model_version\": \"brisk-crane\", \"extension_key\": \"store://loan-app3/extension/model-compliance/model-compliance:cae1f90f9ba24e73843519a0cec3356d\", \"objectives\": [{\"name\": \"Group error-rate parity\", \"description\": \"On held-out applicants, measure maximum TPR/FPR difference across gender, age and socioeconomic-proxy groups; investigate intersectional gaps and proxy discrimination.\", \"metric\": {\"id\": \"metric-equalized-odds-difference\", \"name\": \"Equalized Odds Difference\", \"description\": \"Maximum absolute difference in true positive rate and false positive rate across\", \"kind\": \"COMPOSITE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"\\\\u0394\", \"name\": \"rate difference\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.05}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-10\", \"req-eucharter-art-21\", \"req-eba-demographic_bias\"], \"rationale\": \"Addresses protected-group disparity and proxy discrimination; use gender only for permitted fairness analysis, not as a model input.\"}, {\"name\": \"Discriminative performance\", \"description\": \"Evaluate ranking quality on a representative, held-out applicant set using the approved target and document subgroup results.\", \"metric\": {\"id\": \"metric-auc-roc\", \"name\": \"AUC-ROC (Area Under ROC Curve)\", \"description\": \"Area under the Receiver Operating Characteristic curve. Measures the model\\'s abi\", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"AUC\", \"name\": \"area\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.85}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"The OKF identifies AUC \\\\u2265 0.85 as a common minimum for high-risk credit scoring; confirm against the approved target and deployment population.\"}, {\"name\": \"Adversarial robustness\", \"description\": \"Measure accuracy on perturbed but valid applicant inputs under documented attack budgets, detecting crafted inputs that alter the risk classification.\", \"metric\": {\"id\": \"metric-adversarial-accuracy\", \"name\": \"Adversarial Accuracy\", \"description\": \"Model accuracy on adversarially perturbed inputs. Measures how much accuracy deg\", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"%\", \"name\": \"percent\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.8}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"Addresses adversarial-input misuse and Art. 15 robustness; attack budget and feature-validity constraints must be fixed in the protocol.\"}, {\"name\": \"Traceable explanations for human review\", \"description\": \"Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.\", \"metric\": {\"id\": \"metric-decision-coverage\", \"name\": \"Decision Coverage (Traceable Predictions)\", \"description\": \"Fraction of model predictions for which a traceable decision path or rule-based \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"%\", \"name\": \"percent\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.95}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-13\", \"req-euai-art-14\", \"req-gdpr-art-22\", \"req-eucharter-art-47\"], \"rationale\": \"Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation.\"}, {\"name\": \"Probability calibration\", \"description\": \"On held-out applicants, verify predicted repayment-risk probabilities are calibrated and report calibration by demographic groups.\", \"metric\": {\"id\": \"metric-expected-calibration-error\", \"name\": \"Expected Calibration Error (ECE)\", \"description\": \"Weighted average absolute difference between predicted confidence and empirical \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"ECE\", \"name\": \"calibration error\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.02}}, \"priority\": \"RECOMMENDED\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"The OKF identifies ECE below 0.02 as generally acceptable for high-stakes uses; confirm binning and calibration data.\"}, {\"name\": \"Membership-inference resistance\", \"description\": \"Test whether an attacker can infer applicant-record membership in the training data from model outputs; keep attack AUC near chance.\", \"metric\": {\"id\": \"metric-membership-inference-auc\", \"name\": \"Membership Inference Attack AUC\", \"description\": \"AUC of a membership inference attack classifier distinguishing training members \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"AUC\", \"name\": \"area\"}, \"range\": {\"lower\": 0.5, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.6}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-gdpr-art-5\"], \"rationale\": \"The training data contains applicant identifiers and demographic/financial fields; the OKF says attack AUC above 0.6 warrants investigation.\"}], \"dataset_key\": \"store://loan-app3/dataitem/table/loan_dataset:2d76c2b381ec47b9b00e8b7ed78cd234\", \"bundle_version\": \"79da8bd1b27a\", \"grounding\": {\"metric-equalized-odds-difference\": [\"catalog/metrics/fairness/equalized-odds-difference.md\", \"a50874880eafc6712cea3f9966545a2000354259451bddc91c47e2897878c4fe\"], \"metric-auc-roc\": [\"catalog/metrics/performance/auc-roc.md\", \"0c9c20fd3dd2afa4668f83fdb6260e33a5e2530fff19992fb9b838784ccf81b6\"], \"metric-adversarial-accuracy\": [\"catalog/metrics/robustness/adversarial-accuracy.md\", \"805f83bbf6a3f5c6e42c73fe3db1cfb5adcbc6270c4e1b18bbb085a64df46877\"], \"metric-decision-coverage\": [\"catalog/metrics/explainability/decision-coverage.md\", \"bf17a29c0e837426f5d24b8b5f3eb3fffd30d37eb4f46a77f4167e64bb6f59ad\"], \"metric-expected-calibration-error\": [\"catalog/metrics/calibration/expected-calibration-error.md\", \"2e3fc491cc03657cf68e5e6a01bef60f4e52f8f21ff627a3614131651a1e6bc7\"], \"metric-membership-inference-auc\": [\"catalog/metrics/privacy/membership-inference-auc.md\", \"9795c06cc2f478c822c85412d8f01244cb306a679e9ef773134c1ffe29c933ab\"]}}')\n    \n    DECISION_THRESHOLD = 0.9\n    \n    MIN_CLASS_SUPPORT = 30\n    \n    MAIN_SLICES = ('Gender', 'age_band', 'income_band')\n    \n    ALL_SLICES = (*MAIN_SLICES, 'gender_age', 'gender_income')\n    \n    def _validate(entity: Mapping[str, Any], context: Mapping[str, Any]) -> None:\n        if entity['project'] != CONTRACT['project'] or entity['entity'] != CONTRACT['entity']:\n            raise ValueError('Evaluation target does not match the approved project/model')\n        if not entity['key'] or not entity['version']:\n            raise ValueError('An exact model key and version are required')\n        if context['model_key'] != entity['key']:\n            raise ValueError('Evaluation evidence belongs to a different model')\n        if context['dataset_key'] != CONTRACT['dataset_key']:\n            raise ValueError('Evaluation dataset differs from the approved version')\n        if context['decision_threshold'] != DECISION_THRESHOLD:\n            raise ValueError('The approved historical-approval threshold is 0.90')\n        if 'train' not in context:\n            return\n        train, test = (context['train'], context['test'])\n        if train.empty or test.empty or (not train.index.is_unique) or (not test.index.is_unique):\n            raise ValueError('Nonempty partitions with unique row identifiers are required')\n        if not train.index.intersection(test.index).empty:\n            raise ValueError('Training members and held-out non-members overlap')\n        for frame in (train, test):\n            labels = frame['Loan_Approval_Status'].to_numpy()\n            if not np.isin(labels, [0, 1]).all():\n                raise ValueError('Evaluation labels must be binary, non-null approval outcomes')\n            if 'Applicant_ID' in frame and (frame['Applicant_ID'].isna().any() or frame['Applicant_ID'].duplicated().any()):\n                raise ValueError('Applicant_ID must be non-null and unique within each partition')\n        if 'Applicant_ID' in train and 'Applicant_ID' in test:\n            if set(train['Applicant_ID']).intersection(test['Applicant_ID']):\n                raise ValueError('Applicants overlap across training and evaluation partitions')\n    \n    def _probabilities(entity: Mapping[str, Any], frame: pd.DataFrame, context: Mapping[str, Any]):\n        estimator = entity['estimator']\n        position = list(estimator.classes_).index(1)\n        probabilities = np.asarray(estimator.predict_proba(frame[context['feature_columns']])[:, position], dtype=float)\n        if probabilities.shape != (len(frame),):\n            raise ValueError('Expected one positive-class probability per record')\n        if not np.isfinite(probabilities).all() or ((probabilities < 0) | (probabilities > 1)).any():\n            raise ValueError('Probabilities must be finite values in [0,1]')\n        return probabilities\n    \n    def _envelope(entity, context, metric_id, value, details, reason=None):\n        _validate(entity, context)\n        objective = next((item for item in CONTRACT['objectives'] if item['metric']['id'] == metric_id))\n        metric = objective['metric']\n        threshold = objective['condition']['threshold']\n        if value is not None:\n            if not math.isfinite(value) or not metric['range']['lower'] <= value <= metric['range']['upper']:\n                raise ValueError(f'{metric_id} value is outside its catalog range')\n        determinate = value is not None and reason is None\n        if determinate:\n            operator = threshold['operator']\n            if operator not in ('GEQ', 'LEQ'):\n                raise ValueError(f'Unsupported condition operator: {operator}')\n            passed = value >= threshold['value'] if operator == 'GEQ' else value <= threshold['value']\n            status = 'pass' if passed else 'fail'\n        else:\n            if not reason:\n                raise ValueError('An inconclusive measurement requires an explicit reason')\n            status = 'inconclusive'\n        source_path, source_hash = CONTRACT['grounding'][metric_id]\n        computed_at = context.get('measured_at') or datetime.now(timezone.utc).isoformat()\n        return {'project': entity['project'], 'entity': entity['entity'], 'entity_version': entity['version'], 'objective_ref': f\"model:{entity['entity']}#{metric_id}\", 'objective': objective, 'metric_result': {'metric': metric, 'value': value, 'computed_at': computed_at} if determinate else None, 'status': 'SUCCESS' if determinate else 'INCOMPLETE', 'error': reason, 'evidence': {'details': details, 'assessment': {'status': status, 'determinate': determinate, 'reason': reason, 'operator': threshold['operator'], 'threshold': threshold['value'], 'observed_value': value}}, 'provenance': {'computation_source': source_path, 'computation_source_hash': source_hash, 'bundle_version': CONTRACT['bundle_version'], 'specification_extension': CONTRACT['extension_key'], 'specification_model_key': CONTRACT['specification_model_key'], 'model_key': entity['key'], 'dataset_key': context['dataset_key'], 'run_key': context['run_key'], 'dataset_evidence_available': bool(context.get('training_evidence') or 'train' in context), 'decision_threshold': DECISION_THRESHOLD, 'protocol': 'historical-approval-v1', 'implementation_sha256': context['implementation_sha256'], 'measurement_source': context.get('measurement_source', 'model-and-dataset computation'), 'target_semantics': 'Historical approval, not repayment/default risk'}}\n    \n    def _slices(context):\n        train, test = (context['train'], context['test'])\n        required = {'Gender', 'Age', 'Annual_Income'}\n        missing = required.difference(train.columns.intersection(test.columns))\n        if missing:\n            raise ValueError(f'Missing approved audit attributes: {sorted(missing)}')\n        age = pd.to_numeric(test['Age'], errors='raise')\n        train_age = pd.to_numeric(train['Age'], errors='raise')\n        income = pd.to_numeric(test['Annual_Income'], errors='raise')\n        train_income = pd.to_numeric(train['Annual_Income'], errors='raise')\n        for values in (age, train_age, income, train_income):\n            if not np.isfinite(values.dropna().to_numpy(dtype=float)).all():\n                raise ValueError('Audit attributes must be finite when present')\n        for values in (age, train_age):\n            if (values.dropna() < 0).any() or (values.dropna() > 120).any():\n                raise ValueError('Age must be within [0,120]')\n        if (income.dropna() < 0).any() or (train_income.dropna() < 0).any():\n            raise ValueError('Annual_Income must be nonnegative')\n        edges = train_income.dropna().quantile([1 / 3, 2 / 3]).to_numpy(dtype=float)\n        income_available = len(edges) == 2 and np.isfinite(edges).all() and (edges[0] < edges[1])\n        gender = test['Gender'].map(lambda item: 'missing' if pd.isna(item) else f'value:{item}')\n        training_gender = train['Gender'].map(lambda item: 'missing' if pd.isna(item) else f'value:{item}')\n        age_band = pd.Series(np.select([age.isna().to_numpy(), age.lt(30).fillna(False).to_numpy(dtype=bool), age.lt(60).fillna(False).to_numpy(dtype=bool)], ['missing', '<30', '30-59'], default='>=60'), index=test.index)\n        if income_available:\n            income_band = pd.Series(np.select([income.isna().to_numpy(), income.le(edges[0]).fillna(False).to_numpy(dtype=bool), income.le(edges[1]).fillna(False).to_numpy(dtype=bool)], ['missing', 'low', 'middle'], default='high'), index=test.index)\n        else:\n            income_band = pd.Series('undefined-tertiles', index=test.index)\n        slices = pd.DataFrame({'Gender': gender, 'age_band': age_band, 'income_band': income_band})\n        for name, other in (('gender_age', age_band), ('gender_income', income_band)):\n            slices[name] = [json.dumps(pair) for pair in zip(gender, other)]\n        return (slices, {'income_tertile_edges': edges.tolist() if income_available else None, 'income_tertiles_available': bool(income_available), 'minimum_positives': MIN_CLASS_SUPPORT, 'minimum_negatives': MIN_CLASS_SUPPORT, 'intersections': 'diagnostic only', 'expected_main_groups': {'Gender': sorted(set(gender).union(training_gender)), 'age_band': ['<30', '30-59', '>=60'] + (['missing'] if age.isna().any() or train_age.isna().any() else []), 'income_band': ['low', 'middle', 'high'] + (['missing'] if income.isna().any() or train_income.isna().any() else [])}})\n    \n    def _slice_groups(slices, protocol, name):\n        return protocol['expected_main_groups'][name] if name in MAIN_SLICES else sorted(slices[name].unique())\n    \n    def _ece(labels, probabilities):\n        bins = np.minimum((probabilities * 10).astype(int), 9)\n        details = []\n        value = 0.0\n        for number in range(10):\n            mask = bins == number\n            count = int(mask.sum())\n            observed = float(labels[mask].mean()) if count else None\n            predicted = float(probabilities[mask].mean()) if count else None\n            if count:\n                value += count / len(labels) * abs(observed - predicted)\n            details.append({'lower': number / 10, 'upper': (number + 1) / 10, 'upper_inclusive': number == 9, 'count': count, 'observed_frequency': observed, 'mean_probability': predicted})\n        return (float(value), details)\n    \n    def evaluate_auc(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        probabilities = _probabilities(entity, context['test'], context)\n        if len(np.unique(labels)) < 2:\n            return _envelope(entity, context, 'metric-auc-roc', None, {}, 'Held-out labels contain only one class')\n        slices, protocol = _slices(context)\n        subgroup_results = {}\n        for name in ALL_SLICES:\n            subgroup_results[name] = {}\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                enough = min(int((labels[mask] == 0).sum()), int((labels[mask] == 1).sum())) >= MIN_CLASS_SUPPORT\n                subgroup_results[name][group] = {'count': int(mask.sum()), 'value': float(roc_auc_score(labels[mask], probabilities[mask])) if enough else None, 'status': 'measured' if enough else 'inconclusive: insufficient class support'}\n        return _envelope(entity, context, 'metric-auc-roc', float(roc_auc_score(labels, probabilities)), {'subgroups': subgroup_results, 'protocol': protocol})\n    \n    def evaluate_fairness(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        predictions = (_probabilities(entity, context['test'], context) >= DECISION_THRESHOLD).astype(int)\n        slices, protocol = _slices(context)\n        results, main_gaps, incomplete = ({}, [], [])\n        for name in ALL_SLICES:\n            groups, tprs, fprs, supported = ({}, [], [], True)\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                group_labels, group_predictions = (labels[mask], predictions[mask])\n                tn, fp, fn, tp = [int(((group_labels == actual) & (group_predictions == predicted)).sum()) for actual, predicted in ((0, 0), (0, 1), (1, 0), (1, 1))]\n                positives, negatives = (tp + fn, tn + fp)\n                enough = positives >= MIN_CLASS_SUPPORT and negatives >= MIN_CLASS_SUPPORT\n                groups[group] = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp, 'positives': positives, 'negatives': negatives, 'tpr': tp / positives if positives else None, 'fpr': fp / negatives if negatives else None, 'sufficient_support': enough}\n                if enough:\n                    tprs.append(tp / positives)\n                    fprs.append(fp / negatives)\n                else:\n                    supported = False\n            supported = supported and len(groups) >= 2\n            if 'income' in name and (not protocol['income_tertiles_available']):\n                supported = False\n            gap = max(max(tprs) - min(tprs), max(fprs) - min(fprs)) if supported else None\n            results[name] = {'groups': groups, 'equalized_odds_difference': gap}\n            if name in MAIN_SLICES:\n                if gap is None:\n                    incomplete.append(name)\n                else:\n                    main_gaps.append(gap)\n        value = float(max(main_gaps)) if not incomplete else None\n        reason = f\"Unsupported main slices: {', '.join(incomplete)}\" if incomplete else None\n        return _envelope(entity, context, 'metric-equalized-odds-difference', value, {'slices': results, 'protocol': protocol}, reason)\n    \n    def evaluate_calibration(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        probabilities = _probabilities(entity, context['test'], context)\n        value, bins = _ece(labels, probabilities)\n        slices, protocol = _slices(context)\n        groups = {}\n        for name in ALL_SLICES:\n            groups[name] = {}\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                group_value, group_bins = _ece(labels[mask], probabilities[mask]) if mask.any() else (None, [])\n                enough = min(int((labels[mask] == 0).sum()), int((labels[mask] == 1).sum())) >= MIN_CLASS_SUPPORT\n                groups[name][group] = {'value': group_value, 'bins': group_bins, 'status': 'diagnostic' if enough else 'inconclusive: insufficient class support'}\n        return _envelope(entity, context, 'metric-expected-calibration-error', value, {'bins': bins, 'subgroups': groups, 'protocol': protocol, 'semantics': 'Calibration of historical approval probabilities only'})\n    \n    def evaluate_explanations(entity, context):\n        _validate(entity, context)\n        pipeline = entity['estimator']\n        preprocessor = pipeline.named_steps['preprocessor']\n        train = context['train'][context['feature_columns']]\n        test = context['test'][context['feature_columns']]\n        x_train, x_test = (preprocessor.transform(train), preprocessor.transform(test))\n        train_predictions = (_probabilities(entity, context['train'], context) >= DECISION_THRESHOLD).astype(int)\n        test_predictions = (_probabilities(entity, context['test'], context) >= DECISION_THRESHOLD).astype(int)\n        surrogate = DecisionTreeClassifier(max_depth=5, min_samples_leaf=10, random_state=42)\n        surrogate.fit(x_train, train_predictions)\n        train_leaves, test_leaves = (surrogate.apply(x_train), surrogate.apply(x_test))\n        support = np.bincount(train_leaves, minlength=surrogate.tree_.node_count)\n        coverage = float((support[test_leaves] >= 10).mean())\n        feature_names = preprocessor.get_feature_names_out().tolist()\n        original_fields = []\n        for name, transformer, columns in preprocessor.transformers_:\n            if name == 'remainder':\n                continue\n            if name == 'numeric':\n                imputed = transformer.named_steps['imputer'].get_feature_names_out(columns)\n                original_fields.extend((item.removeprefix('missingindicator_') if item not in columns else item for item in imputed))\n            elif name == 'categorical':\n                encoder = transformer.named_steps['one_hot']\n                original_fields.extend((column for column, categories in zip(columns, encoder.categories_) for _ in categories))\n            else:\n                raise ValueError(f'Unsupported preprocessor transformer: {name}')\n        if len(original_fields) != len(feature_names):\n            raise ValueError('Cannot map transformed explanation features to original fields')\n        tree = surrogate.tree_\n        fidelity = float(accuracy_score(test_predictions, surrogate.predict(x_test)))\n        details = {'covered': int((support[test_leaves] >= 10).sum()), 'total': len(test), 'surrogate_fidelity': fidelity, 'fidelity_acceptance': 'not specified; diagnostic only', 'reviewer_availability': 'unverified', 'override_escalation': 'unverified', 'coverage_scope': 'offline catalog surrogate-support proxy, not verified human-review access', 'transformed_feature_mapping': dict(zip(feature_names, original_fields)), 'tree': {'children_left': tree.children_left.tolist(), 'children_right': tree.children_right.tolist(), 'feature': tree.feature.tolist(), 'threshold': tree.threshold.tolist(), 'class_counts': tree.value.tolist(), 'classes': surrogate.classes_.tolist(), 'training_leaf_support': support.tolist(), 'feature_names': feature_names}, 'prediction_traces': [{'row_id': int(row), 'leaf': int(leaf), 'support': int(support[leaf])} for row, leaf in zip(test.index, test_leaves)], 'settings': {'max_depth': 5, 'min_samples_leaf': 10, 'random_state': 42}}\n        return _envelope(entity, context, 'metric-decision-coverage', coverage, details)\n    \n    def evaluate_membership(entity, context):\n        _validate(entity, context)\n        rng = np.random.default_rng(42)\n        count = min(len(context['train']), len(context['test']))\n        if count < 4:\n            return _envelope(entity, context, 'metric-membership-inference-auc', None, {}, 'At least four members and four non-members are required for an attack split')\n        members = context['train'].iloc[rng.choice(len(context['train']), count, replace=False)]\n        nonmembers = context['test'].iloc[rng.choice(len(context['test']), count, replace=False)]\n        attack_frames = pd.concat([members, nonmembers])\n        probabilities = _probabilities(entity, attack_frames, context)\n        labels = attack_frames['Loan_Approval_Status'].to_numpy(dtype=int)\n        true_probability = np.where(labels == 1, probabilities, 1 - probabilities)\n        features = np.column_stack([-np.log(np.clip(true_probability, np.finfo(float).eps, 1)), np.maximum(probabilities, 1 - probabilities), np.minimum(probabilities, 1 - probabilities)])\n        membership = np.concatenate([np.ones(count, dtype=int), np.zeros(count, dtype=int)])\n        train_ids, test_ids = train_test_split(np.arange(2 * count), test_size=0.5, stratify=membership, random_state=42)\n        attacker = LogisticRegression(max_iter=1000, random_state=42)\n        attacker.fit(features[train_ids], membership[train_ids])\n        train_scores = attacker.predict_proba(features[train_ids])[:, list(attacker.classes_).index(1)]\n        orientation = -1 if roc_auc_score(membership[train_ids], train_scores) < 0.5 else 1\n        scores = attacker.predict_proba(features[test_ids])[:, list(attacker.classes_).index(1)]\n        if orientation == -1:\n            scores = 1 - scores\n        raw_auc = float(roc_auc_score(membership[test_ids], scores))\n        bootstraps = []\n        for _ in range(200):\n            sample = np.concatenate([rng.choice(np.flatnonzero(membership[test_ids] == label), int((membership[test_ids] == label).sum()), replace=True) for label in (0, 1)])\n            bootstraps.append(float(roc_auc_score(membership[test_ids][sample], scores[sample])))\n        details = {'raw_attack_test_auc': raw_auc, 'score_orientation': orientation, 'bootstrap_95_percent_interval': np.quantile(bootstraps, [0.025, 0.975]).tolist(), 'bootstrap_resamples': 200, 'members': count, 'nonmembers': count, 'attack_train_rows': len(train_ids), 'attack_test_rows': len(test_ids), 'attacker_features': ['negative_log_likelihood', 'maximum_probability', 'minimum_probability'], 'attacker': {'algorithm': 'LogisticRegression', 'max_iter': 1000, 'random_state': 42}, 'partitions': {'attack_train': attack_frames.index[train_ids].tolist(), 'attack_test': attack_frames.index[test_ids].tolist(), 'member_rows': members.index.tolist(), 'nonmember_rows': nonmembers.index.tolist()}, 'limitations': 'One black-box attack; not a privacy guarantee'}\n        if raw_auc < 0.5:\n            return _envelope(entity, context, 'metric-membership-inference-auc', None, details, 'Attack-test AUC is below the catalog range; raw estimate retained without test-label reorientation')\n        return _envelope(entity, context, 'metric-membership-inference-auc', raw_auc, details)\n    \n    def evaluate_robustness(entity, context):\n        _validate(entity, context)\n        return _envelope(entity, context, 'metric-adversarial-accuracy', None, {'required_protocol_fields': ['mutable_fields', 'per_field_bounds_and_budgets', 'search_method_and_budget', 'label_preservation_justification', 'validity_checks', 'random_seed']}, 'No approved tabular attack protocol supplied; adversarial accuracy was not computed')\n    \n    def evaluate_saved_metric(entity, context, metric_id, metric_name):\n        \"\"\"Assess one provenance-bound training measurement without requiring dataset access.\"\"\"\n        snapshot = context.get('training_evidence')\n        if not snapshot:\n            return _envelope(entity, context, metric_id, None, {}, 'The model has no provenance-bound training measurements; retraining is required')\n        statistics = snapshot['statistics']\n        value = context['model_metrics'].get(metric_name)\n        if metric_id == 'metric-equalized-odds-difference':\n            details = {'slices': statistics['slices'], 'income_tertile_edges': statistics['income_tertile_edges']}\n        elif metric_id == 'metric-expected-calibration-error':\n            details = {'bins': statistics['calibration_bins'], 'subgroup_calibration': 'Requires the optional training dataset'}\n        else:\n            details = {'subgroup_statistics': statistics['slices']}\n        reason = None\n        if value is None:\n            reason = statistics.get('fairness_unavailable') or f'No saved {metric_name} measurement'\n        return _envelope(entity, context, metric_id, value, details, reason)\n    \n    return evaluate_explanations(entity, context)\n",
+    "source_hash": "4f6b57c0ad3079f0374e1fd4133330e2f6759d26852220bada8238c208e3a6af",
+    "entry_point": "evaluate_explanations",
+    "entity_contract": {
+      "kind": "model",
+      "name": "loan-approval-classifier",
+      "project": "loan-app3",
+      "interface": "mapping",
+      "read_only": true,
+      "fields": {
+        "key": "entity.key: exact newly registered model store URI, matching context.model_key",
+        "version": "entity.version: exact version returned by the training registration",
+        "estimator": "entity.estimator: fitted sklearn Pipeline; read-only predict_proba/classes_"
+      }
+    },
+    "result_contract": {
+      "type": "MeasurementEnvelope",
+      "required_fields": [
+        "project",
+        "entity",
+        "entity_version",
+        "objective_ref",
+        "objective",
+        "metric_result",
+        "status",
+        "error",
+        "evidence",
+        "provenance"
+      ],
+      "metric_result": {
+        "type": "MetricResult",
+        "required_fields": [
+          "metric",
+          "value",
+          "computed_at"
+        ]
+      },
+      "json_compatible": true
+    },
+    "dependencies": [
+      "numpy",
+      "pandas",
+      "scikit-learn>=1.5"
+    ],
+    "parameters": {
+      "target": "Loan_Approval_Status",
+      "positive_label": 1,
+      "decision_threshold": 0.9
+    },
+    "objective_ref": "model:loan-approval-classifier#metric-decision-coverage",
+    "objective": {
+      "name": "Traceable explanations for human review",
+      "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+      "metric": {
+        "id": "metric-decision-coverage",
+        "name": "Decision Coverage (Traceable Predictions)",
+        "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+        "kind": "PRIMITIVE",
+        "scale": "RATIO",
+        "unit": {
+          "symbol": "%",
+          "name": "percent"
+        },
+        "range": {
+          "lower": 0.0,
+          "upper": 1.0,
+          "discrete": false
+        }
+      },
+      "condition": {
+        "threshold": {
+          "operator": "GEQ",
+          "value": 0.95
+        }
+      },
+      "priority": "MANDATORY",
+      "severity": "HIGH",
+      "requirements": [
+        "req-euai-art-13",
+        "req-euai-art-14",
+        "req-gdpr-art-22",
+        "req-eucharter-art-47"
+      ],
+      "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+    },
+    "metric": {
+      "id": "metric-decision-coverage",
+      "name": "Decision Coverage (Traceable Predictions)",
+      "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+      "kind": "PRIMITIVE",
+      "scale": "RATIO",
+      "unit": {
+        "symbol": "%",
+        "name": "percent"
+      },
+      "range": {
+        "lower": 0.0,
+        "upper": 1.0,
+        "discrete": false
+      }
+    },
+    "source_paths": [
+      "catalog/metrics/explainability/decision-coverage.md"
+    ],
+    "source_hashes": {
+      "catalog/metrics/explainability/decision-coverage.md": "bf17a29c0e837426f5d24b8b5f3eb3fffd30d37eb4f46a77f4167e64bb6f59ad"
+    },
+    "bundle_version": "79da8bd1b27a",
+    "required_inputs": [
+      "key",
+      "version",
+      "estimator",
+      "target",
+      "positive_label",
+      "decision_threshold",
+      "evaluation_data",
+      "dataset_key",
+      "context",
+      "fairness",
+      "calibration",
+      "explanations",
+      "membership"
+    ],
+    "missing_inputs": [],
+    "unsupported_reasons": [],
+    "validation": {
+      "valid": true,
+      "static_only": true,
+      "executed": false,
+      "warnings": []
+    },
+    "artifact_id": "6319c36b9bbcd87e0c0eb50e"
+  },
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "normalized": {
+      "status": "ready",
+      "source_code": "import json\nimport math\nfrom datetime import datetime, timezone\nfrom typing import Any, Mapping\nimport numpy as np\nimport pandas as pd\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import accuracy_score, roc_auc_score\nfrom sklearn.model_selection import train_test_split\nfrom sklearn.tree import DecisionTreeClassifier\n\ndef evaluate_explanations(entity, context):\n    CONTRACT = json.loads('{\"project\": \"loan-app3\", \"entity\": \"loan-approval-classifier\", \"specification_model_key\": \"store://loan-app3/model/sklearn/loan-approval-classifier:81f1811cff17415c9c203d8953e47b5c\", \"specification_model_version\": \"brisk-crane\", \"extension_key\": \"store://loan-app3/extension/model-compliance/model-compliance:cae1f90f9ba24e73843519a0cec3356d\", \"objectives\": [{\"name\": \"Group error-rate parity\", \"description\": \"On held-out applicants, measure maximum TPR/FPR difference across gender, age and socioeconomic-proxy groups; investigate intersectional gaps and proxy discrimination.\", \"metric\": {\"id\": \"metric-equalized-odds-difference\", \"name\": \"Equalized Odds Difference\", \"description\": \"Maximum absolute difference in true positive rate and false positive rate across\", \"kind\": \"COMPOSITE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"\\\\u0394\", \"name\": \"rate difference\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.05}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-10\", \"req-eucharter-art-21\", \"req-eba-demographic_bias\"], \"rationale\": \"Addresses protected-group disparity and proxy discrimination; use gender only for permitted fairness analysis, not as a model input.\"}, {\"name\": \"Discriminative performance\", \"description\": \"Evaluate ranking quality on a representative, held-out applicant set using the approved target and document subgroup results.\", \"metric\": {\"id\": \"metric-auc-roc\", \"name\": \"AUC-ROC (Area Under ROC Curve)\", \"description\": \"Area under the Receiver Operating Characteristic curve. Measures the model\\'s abi\", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"AUC\", \"name\": \"area\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.85}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"The OKF identifies AUC \\\\u2265 0.85 as a common minimum for high-risk credit scoring; confirm against the approved target and deployment population.\"}, {\"name\": \"Adversarial robustness\", \"description\": \"Measure accuracy on perturbed but valid applicant inputs under documented attack budgets, detecting crafted inputs that alter the risk classification.\", \"metric\": {\"id\": \"metric-adversarial-accuracy\", \"name\": \"Adversarial Accuracy\", \"description\": \"Model accuracy on adversarially perturbed inputs. Measures how much accuracy deg\", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"%\", \"name\": \"percent\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.8}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"Addresses adversarial-input misuse and Art. 15 robustness; attack budget and feature-validity constraints must be fixed in the protocol.\"}, {\"name\": \"Traceable explanations for human review\", \"description\": \"Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.\", \"metric\": {\"id\": \"metric-decision-coverage\", \"name\": \"Decision Coverage (Traceable Predictions)\", \"description\": \"Fraction of model predictions for which a traceable decision path or rule-based \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"%\", \"name\": \"percent\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"GEQ\", \"value\": 0.95}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-13\", \"req-euai-art-14\", \"req-gdpr-art-22\", \"req-eucharter-art-47\"], \"rationale\": \"Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation.\"}, {\"name\": \"Probability calibration\", \"description\": \"On held-out applicants, verify predicted repayment-risk probabilities are calibrated and report calibration by demographic groups.\", \"metric\": {\"id\": \"metric-expected-calibration-error\", \"name\": \"Expected Calibration Error (ECE)\", \"description\": \"Weighted average absolute difference between predicted confidence and empirical \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"ECE\", \"name\": \"calibration error\"}, \"range\": {\"lower\": 0.0, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.02}}, \"priority\": \"RECOMMENDED\", \"severity\": \"HIGH\", \"requirements\": [\"req-euai-art-15\"], \"rationale\": \"The OKF identifies ECE below 0.02 as generally acceptable for high-stakes uses; confirm binning and calibration data.\"}, {\"name\": \"Membership-inference resistance\", \"description\": \"Test whether an attacker can infer applicant-record membership in the training data from model outputs; keep attack AUC near chance.\", \"metric\": {\"id\": \"metric-membership-inference-auc\", \"name\": \"Membership Inference Attack AUC\", \"description\": \"AUC of a membership inference attack classifier distinguishing training members \", \"kind\": \"PRIMITIVE\", \"scale\": \"RATIO\", \"unit\": {\"symbol\": \"AUC\", \"name\": \"area\"}, \"range\": {\"lower\": 0.5, \"upper\": 1.0, \"discrete\": false}}, \"condition\": {\"threshold\": {\"operator\": \"LEQ\", \"value\": 0.6}}, \"priority\": \"MANDATORY\", \"severity\": \"HIGH\", \"requirements\": [\"req-gdpr-art-5\"], \"rationale\": \"The training data contains applicant identifiers and demographic/financial fields; the OKF says attack AUC above 0.6 warrants investigation.\"}], \"dataset_key\": \"store://loan-app3/dataitem/table/loan_dataset:2d76c2b381ec47b9b00e8b7ed78cd234\", \"bundle_version\": \"79da8bd1b27a\", \"grounding\": {\"metric-equalized-odds-difference\": [\"catalog/metrics/fairness/equalized-odds-difference.md\", \"a50874880eafc6712cea3f9966545a2000354259451bddc91c47e2897878c4fe\"], \"metric-auc-roc\": [\"catalog/metrics/performance/auc-roc.md\", \"0c9c20fd3dd2afa4668f83fdb6260e33a5e2530fff19992fb9b838784ccf81b6\"], \"metric-adversarial-accuracy\": [\"catalog/metrics/robustness/adversarial-accuracy.md\", \"805f83bbf6a3f5c6e42c73fe3db1cfb5adcbc6270c4e1b18bbb085a64df46877\"], \"metric-decision-coverage\": [\"catalog/metrics/explainability/decision-coverage.md\", \"bf17a29c0e837426f5d24b8b5f3eb3fffd30d37eb4f46a77f4167e64bb6f59ad\"], \"metric-expected-calibration-error\": [\"catalog/metrics/calibration/expected-calibration-error.md\", \"2e3fc491cc03657cf68e5e6a01bef60f4e52f8f21ff627a3614131651a1e6bc7\"], \"metric-membership-inference-auc\": [\"catalog/metrics/privacy/membership-inference-auc.md\", \"9795c06cc2f478c822c85412d8f01244cb306a679e9ef773134c1ffe29c933ab\"]}}')\n    \n    DECISION_THRESHOLD = 0.9\n    \n    MIN_CLASS_SUPPORT = 30\n    \n    MAIN_SLICES = ('Gender', 'age_band', 'income_band')\n    \n    ALL_SLICES = (*MAIN_SLICES, 'gender_age', 'gender_income')\n    \n    def _validate(entity: Mapping[str, Any], context: Mapping[str, Any]) -> None:\n        if entity['project'] != CONTRACT['project'] or entity['entity'] != CONTRACT['entity']:\n            raise ValueError('Evaluation target does not match the approved project/model')\n        if not entity['key'] or not entity['version']:\n            raise ValueError('An exact model key and version are required')\n        if context['model_key'] != entity['key']:\n            raise ValueError('Evaluation evidence belongs to a different model')\n        if context['dataset_key'] != CONTRACT['dataset_key']:\n            raise ValueError('Evaluation dataset differs from the approved version')\n        if context['decision_threshold'] != DECISION_THRESHOLD:\n            raise ValueError('The approved historical-approval threshold is 0.90')\n        if 'train' not in context:\n            return\n        train, test = (context['train'], context['test'])\n        if train.empty or test.empty or (not train.index.is_unique) or (not test.index.is_unique):\n            raise ValueError('Nonempty partitions with unique row identifiers are required')\n        if not train.index.intersection(test.index).empty:\n            raise ValueError('Training members and held-out non-members overlap')\n        for frame in (train, test):\n            labels = frame['Loan_Approval_Status'].to_numpy()\n            if not np.isin(labels, [0, 1]).all():\n                raise ValueError('Evaluation labels must be binary, non-null approval outcomes')\n            if 'Applicant_ID' in frame and (frame['Applicant_ID'].isna().any() or frame['Applicant_ID'].duplicated().any()):\n                raise ValueError('Applicant_ID must be non-null and unique within each partition')\n        if 'Applicant_ID' in train and 'Applicant_ID' in test:\n            if set(train['Applicant_ID']).intersection(test['Applicant_ID']):\n                raise ValueError('Applicants overlap across training and evaluation partitions')\n    \n    def _probabilities(entity: Mapping[str, Any], frame: pd.DataFrame, context: Mapping[str, Any]):\n        estimator = entity['estimator']\n        position = list(estimator.classes_).index(1)\n        probabilities = np.asarray(estimator.predict_proba(frame[context['feature_columns']])[:, position], dtype=float)\n        if probabilities.shape != (len(frame),):\n            raise ValueError('Expected one positive-class probability per record')\n        if not np.isfinite(probabilities).all() or ((probabilities < 0) | (probabilities > 1)).any():\n            raise ValueError('Probabilities must be finite values in [0,1]')\n        return probabilities\n    \n    def _envelope(entity, context, metric_id, value, details, reason=None):\n        _validate(entity, context)\n        objective = next((item for item in CONTRACT['objectives'] if item['metric']['id'] == metric_id))\n        metric = objective['metric']\n        threshold = objective['condition']['threshold']\n        if value is not None:\n            if not math.isfinite(value) or not metric['range']['lower'] <= value <= metric['range']['upper']:\n                raise ValueError(f'{metric_id} value is outside its catalog range')\n        determinate = value is not None and reason is None\n        if determinate:\n            operator = threshold['operator']\n            if operator not in ('GEQ', 'LEQ'):\n                raise ValueError(f'Unsupported condition operator: {operator}')\n            passed = value >= threshold['value'] if operator == 'GEQ' else value <= threshold['value']\n            status = 'pass' if passed else 'fail'\n        else:\n            if not reason:\n                raise ValueError('An inconclusive measurement requires an explicit reason')\n            status = 'inconclusive'\n        source_path, source_hash = CONTRACT['grounding'][metric_id]\n        computed_at = context.get('measured_at') or datetime.now(timezone.utc).isoformat()\n        return {'project': entity['project'], 'entity': entity['entity'], 'entity_version': entity['version'], 'objective_ref': f\"model:{entity['entity']}#{metric_id}\", 'objective': objective, 'metric_result': {'metric': metric, 'value': value, 'computed_at': computed_at} if determinate else None, 'status': 'SUCCESS' if determinate else 'INCOMPLETE', 'error': reason, 'evidence': {'details': details, 'assessment': {'status': status, 'determinate': determinate, 'reason': reason, 'operator': threshold['operator'], 'threshold': threshold['value'], 'observed_value': value}}, 'provenance': {'computation_source': source_path, 'computation_source_hash': source_hash, 'bundle_version': CONTRACT['bundle_version'], 'specification_extension': CONTRACT['extension_key'], 'specification_model_key': CONTRACT['specification_model_key'], 'model_key': entity['key'], 'dataset_key': context['dataset_key'], 'run_key': context['run_key'], 'dataset_evidence_available': bool(context.get('training_evidence') or 'train' in context), 'decision_threshold': DECISION_THRESHOLD, 'protocol': 'historical-approval-v1', 'implementation_sha256': context['implementation_sha256'], 'measurement_source': context.get('measurement_source', 'model-and-dataset computation'), 'target_semantics': 'Historical approval, not repayment/default risk'}}\n    \n    def _slices(context):\n        train, test = (context['train'], context['test'])\n        required = {'Gender', 'Age', 'Annual_Income'}\n        missing = required.difference(train.columns.intersection(test.columns))\n        if missing:\n            raise ValueError(f'Missing approved audit attributes: {sorted(missing)}')\n        age = pd.to_numeric(test['Age'], errors='raise')\n        train_age = pd.to_numeric(train['Age'], errors='raise')\n        income = pd.to_numeric(test['Annual_Income'], errors='raise')\n        train_income = pd.to_numeric(train['Annual_Income'], errors='raise')\n        for values in (age, train_age, income, train_income):\n            if not np.isfinite(values.dropna().to_numpy(dtype=float)).all():\n                raise ValueError('Audit attributes must be finite when present')\n        for values in (age, train_age):\n            if (values.dropna() < 0).any() or (values.dropna() > 120).any():\n                raise ValueError('Age must be within [0,120]')\n        if (income.dropna() < 0).any() or (train_income.dropna() < 0).any():\n            raise ValueError('Annual_Income must be nonnegative')\n        edges = train_income.dropna().quantile([1 / 3, 2 / 3]).to_numpy(dtype=float)\n        income_available = len(edges) == 2 and np.isfinite(edges).all() and (edges[0] < edges[1])\n        gender = test['Gender'].map(lambda item: 'missing' if pd.isna(item) else f'value:{item}')\n        training_gender = train['Gender'].map(lambda item: 'missing' if pd.isna(item) else f'value:{item}')\n        age_band = pd.Series(np.select([age.isna().to_numpy(), age.lt(30).fillna(False).to_numpy(dtype=bool), age.lt(60).fillna(False).to_numpy(dtype=bool)], ['missing', '<30', '30-59'], default='>=60'), index=test.index)\n        if income_available:\n            income_band = pd.Series(np.select([income.isna().to_numpy(), income.le(edges[0]).fillna(False).to_numpy(dtype=bool), income.le(edges[1]).fillna(False).to_numpy(dtype=bool)], ['missing', 'low', 'middle'], default='high'), index=test.index)\n        else:\n            income_band = pd.Series('undefined-tertiles', index=test.index)\n        slices = pd.DataFrame({'Gender': gender, 'age_band': age_band, 'income_band': income_band})\n        for name, other in (('gender_age', age_band), ('gender_income', income_band)):\n            slices[name] = [json.dumps(pair) for pair in zip(gender, other)]\n        return (slices, {'income_tertile_edges': edges.tolist() if income_available else None, 'income_tertiles_available': bool(income_available), 'minimum_positives': MIN_CLASS_SUPPORT, 'minimum_negatives': MIN_CLASS_SUPPORT, 'intersections': 'diagnostic only', 'expected_main_groups': {'Gender': sorted(set(gender).union(training_gender)), 'age_band': ['<30', '30-59', '>=60'] + (['missing'] if age.isna().any() or train_age.isna().any() else []), 'income_band': ['low', 'middle', 'high'] + (['missing'] if income.isna().any() or train_income.isna().any() else [])}})\n    \n    def _slice_groups(slices, protocol, name):\n        return protocol['expected_main_groups'][name] if name in MAIN_SLICES else sorted(slices[name].unique())\n    \n    def _ece(labels, probabilities):\n        bins = np.minimum((probabilities * 10).astype(int), 9)\n        details = []\n        value = 0.0\n        for number in range(10):\n            mask = bins == number\n            count = int(mask.sum())\n            observed = float(labels[mask].mean()) if count else None\n            predicted = float(probabilities[mask].mean()) if count else None\n            if count:\n                value += count / len(labels) * abs(observed - predicted)\n            details.append({'lower': number / 10, 'upper': (number + 1) / 10, 'upper_inclusive': number == 9, 'count': count, 'observed_frequency': observed, 'mean_probability': predicted})\n        return (float(value), details)\n    \n    def evaluate_auc(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        probabilities = _probabilities(entity, context['test'], context)\n        if len(np.unique(labels)) < 2:\n            return _envelope(entity, context, 'metric-auc-roc', None, {}, 'Held-out labels contain only one class')\n        slices, protocol = _slices(context)\n        subgroup_results = {}\n        for name in ALL_SLICES:\n            subgroup_results[name] = {}\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                enough = min(int((labels[mask] == 0).sum()), int((labels[mask] == 1).sum())) >= MIN_CLASS_SUPPORT\n                subgroup_results[name][group] = {'count': int(mask.sum()), 'value': float(roc_auc_score(labels[mask], probabilities[mask])) if enough else None, 'status': 'measured' if enough else 'inconclusive: insufficient class support'}\n        return _envelope(entity, context, 'metric-auc-roc', float(roc_auc_score(labels, probabilities)), {'subgroups': subgroup_results, 'protocol': protocol})\n    \n    def evaluate_fairness(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        predictions = (_probabilities(entity, context['test'], context) >= DECISION_THRESHOLD).astype(int)\n        slices, protocol = _slices(context)\n        results, main_gaps, incomplete = ({}, [], [])\n        for name in ALL_SLICES:\n            groups, tprs, fprs, supported = ({}, [], [], True)\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                group_labels, group_predictions = (labels[mask], predictions[mask])\n                tn, fp, fn, tp = [int(((group_labels == actual) & (group_predictions == predicted)).sum()) for actual, predicted in ((0, 0), (0, 1), (1, 0), (1, 1))]\n                positives, negatives = (tp + fn, tn + fp)\n                enough = positives >= MIN_CLASS_SUPPORT and negatives >= MIN_CLASS_SUPPORT\n                groups[group] = {'tn': tn, 'fp': fp, 'fn': fn, 'tp': tp, 'positives': positives, 'negatives': negatives, 'tpr': tp / positives if positives else None, 'fpr': fp / negatives if negatives else None, 'sufficient_support': enough}\n                if enough:\n                    tprs.append(tp / positives)\n                    fprs.append(fp / negatives)\n                else:\n                    supported = False\n            supported = supported and len(groups) >= 2\n            if 'income' in name and (not protocol['income_tertiles_available']):\n                supported = False\n            gap = max(max(tprs) - min(tprs), max(fprs) - min(fprs)) if supported else None\n            results[name] = {'groups': groups, 'equalized_odds_difference': gap}\n            if name in MAIN_SLICES:\n                if gap is None:\n                    incomplete.append(name)\n                else:\n                    main_gaps.append(gap)\n        value = float(max(main_gaps)) if not incomplete else None\n        reason = f\"Unsupported main slices: {', '.join(incomplete)}\" if incomplete else None\n        return _envelope(entity, context, 'metric-equalized-odds-difference', value, {'slices': results, 'protocol': protocol}, reason)\n    \n    def evaluate_calibration(entity, context):\n        _validate(entity, context)\n        labels = context['test']['Loan_Approval_Status'].to_numpy(dtype=int)\n        probabilities = _probabilities(entity, context['test'], context)\n        value, bins = _ece(labels, probabilities)\n        slices, protocol = _slices(context)\n        groups = {}\n        for name in ALL_SLICES:\n            groups[name] = {}\n            for group in _slice_groups(slices, protocol, name):\n                mask = (slices[name] == group).to_numpy()\n                group_value, group_bins = _ece(labels[mask], probabilities[mask]) if mask.any() else (None, [])\n                enough = min(int((labels[mask] == 0).sum()), int((labels[mask] == 1).sum())) >= MIN_CLASS_SUPPORT\n                groups[name][group] = {'value': group_value, 'bins': group_bins, 'status': 'diagnostic' if enough else 'inconclusive: insufficient class support'}\n        return _envelope(entity, context, 'metric-expected-calibration-error', value, {'bins': bins, 'subgroups': groups, 'protocol': protocol, 'semantics': 'Calibration of historical approval probabilities only'})\n    \n    def evaluate_explanations(entity, context):\n        _validate(entity, context)\n        pipeline = entity['estimator']\n        preprocessor = pipeline.named_steps['preprocessor']\n        train = context['train'][context['feature_columns']]\n        test = context['test'][context['feature_columns']]\n        x_train, x_test = (preprocessor.transform(train), preprocessor.transform(test))\n        train_predictions = (_probabilities(entity, context['train'], context) >= DECISION_THRESHOLD).astype(int)\n        test_predictions = (_probabilities(entity, context['test'], context) >= DECISION_THRESHOLD).astype(int)\n        surrogate = DecisionTreeClassifier(max_depth=5, min_samples_leaf=10, random_state=42)\n        surrogate.fit(x_train, train_predictions)\n        train_leaves, test_leaves = (surrogate.apply(x_train), surrogate.apply(x_test))\n        support = np.bincount(train_leaves, minlength=surrogate.tree_.node_count)\n        coverage = float((support[test_leaves] >= 10).mean())\n        feature_names = preprocessor.get_feature_names_out().tolist()\n        original_fields = []\n        for name, transformer, columns in preprocessor.transformers_:\n            if name == 'remainder':\n                continue\n            if name == 'numeric':\n                imputed = transformer.named_steps['imputer'].get_feature_names_out(columns)\n                original_fields.extend((item.removeprefix('missingindicator_') if item not in columns else item for item in imputed))\n            elif name == 'categorical':\n                encoder = transformer.named_steps['one_hot']\n                original_fields.extend((column for column, categories in zip(columns, encoder.categories_) for _ in categories))\n            else:\n                raise ValueError(f'Unsupported preprocessor transformer: {name}')\n        if len(original_fields) != len(feature_names):\n            raise ValueError('Cannot map transformed explanation features to original fields')\n        tree = surrogate.tree_\n        fidelity = float(accuracy_score(test_predictions, surrogate.predict(x_test)))\n        details = {'covered': int((support[test_leaves] >= 10).sum()), 'total': len(test), 'surrogate_fidelity': fidelity, 'fidelity_acceptance': 'not specified; diagnostic only', 'reviewer_availability': 'unverified', 'override_escalation': 'unverified', 'coverage_scope': 'offline catalog surrogate-support proxy, not verified human-review access', 'transformed_feature_mapping': dict(zip(feature_names, original_fields)), 'tree': {'children_left': tree.children_left.tolist(), 'children_right': tree.children_right.tolist(), 'feature': tree.feature.tolist(), 'threshold': tree.threshold.tolist(), 'class_counts': tree.value.tolist(), 'classes': surrogate.classes_.tolist(), 'training_leaf_support': support.tolist(), 'feature_names': feature_names}, 'prediction_traces': [{'row_id': int(row), 'leaf': int(leaf), 'support': int(support[leaf])} for row, leaf in zip(test.index, test_leaves)], 'settings': {'max_depth': 5, 'min_samples_leaf': 10, 'random_state': 42}}\n        return _envelope(entity, context, 'metric-decision-coverage', coverage, details)\n    \n    def evaluate_membership(entity, context):\n        _validate(entity, context)\n        rng = np.random.default_rng(42)\n        count = min(len(context['train']), len(context['test']))\n        if count < 4:\n            return _envelope(entity, context, 'metric-membership-inference-auc', None, {}, 'At least four members and four non-members are required for an attack split')\n        members = context['train'].iloc[rng.choice(len(context['train']), count, replace=False)]\n        nonmembers = context['test'].iloc[rng.choice(len(context['test']), count, replace=False)]\n        attack_frames = pd.concat([members, nonmembers])\n        probabilities = _probabilities(entity, attack_frames, context)\n        labels = attack_frames['Loan_Approval_Status'].to_numpy(dtype=int)\n        true_probability = np.where(labels == 1, probabilities, 1 - probabilities)\n        features = np.column_stack([-np.log(np.clip(true_probability, np.finfo(float).eps, 1)), np.maximum(probabilities, 1 - probabilities), np.minimum(probabilities, 1 - probabilities)])\n        membership = np.concatenate([np.ones(count, dtype=int), np.zeros(count, dtype=int)])\n        train_ids, test_ids = train_test_split(np.arange(2 * count), test_size=0.5, stratify=membership, random_state=42)\n        attacker = LogisticRegression(max_iter=1000, random_state=42)\n        attacker.fit(features[train_ids], membership[train_ids])\n        train_scores = attacker.predict_proba(features[train_ids])[:, list(attacker.classes_).index(1)]\n        orientation = -1 if roc_auc_score(membership[train_ids], train_scores) < 0.5 else 1\n        scores = attacker.predict_proba(features[test_ids])[:, list(attacker.classes_).index(1)]\n        if orientation == -1:\n            scores = 1 - scores\n        raw_auc = float(roc_auc_score(membership[test_ids], scores))\n        bootstraps = []\n        for _ in range(200):\n            sample = np.concatenate([rng.choice(np.flatnonzero(membership[test_ids] == label), int((membership[test_ids] == label).sum()), replace=True) for label in (0, 1)])\n            bootstraps.append(float(roc_auc_score(membership[test_ids][sample], scores[sample])))\n        details = {'raw_attack_test_auc': raw_auc, 'score_orientation': orientation, 'bootstrap_95_percent_interval': np.quantile(bootstraps, [0.025, 0.975]).tolist(), 'bootstrap_resamples': 200, 'members': count, 'nonmembers': count, 'attack_train_rows': len(train_ids), 'attack_test_rows': len(test_ids), 'attacker_features': ['negative_log_likelihood', 'maximum_probability', 'minimum_probability'], 'attacker': {'algorithm': 'LogisticRegression', 'max_iter': 1000, 'random_state': 42}, 'partitions': {'attack_train': attack_frames.index[train_ids].tolist(), 'attack_test': attack_frames.index[test_ids].tolist(), 'member_rows': members.index.tolist(), 'nonmember_rows': nonmembers.index.tolist()}, 'limitations': 'One black-box attack; not a privacy guarantee'}\n        if raw_auc < 0.5:\n            return _envelope(entity, context, 'metric-membership-inference-auc', None, details, 'Attack-test AUC is below the catalog range; raw estimate retained without test-label reorientation')\n        return _envelope(entity, context, 'metric-membership-inference-auc', raw_auc, details)\n    \n    def evaluate_robustness(entity, context):\n        _validate(entity, context)\n        return _envelope(entity, context, 'metric-adversarial-accuracy', None, {'required_protocol_fields': ['mutable_fields', 'per_field_bounds_and_budgets', 'search_method_and_budget', 'label_preservation_justification', 'validity_checks', 'random_seed']}, 'No approved tabular attack protocol supplied; adversarial accuracy was not computed')\n    \n    def evaluate_saved_metric(entity, context, metric_id, metric_name):\n        \"\"\"Assess one provenance-bound training measurement without requiring dataset access.\"\"\"\n        snapshot = context.get('training_evidence')\n        if not snapshot:\n            return _envelope(entity, context, metric_id, None, {}, 'The model has no provenance-bound training measurements; retraining is required')\n        statistics = snapshot['statistics']\n        value = context['model_metrics'].get(metric_name)\n        if metric_id == 'metric-equalized-odds-difference':\n            details = {'slices': statistics['slices'], 'income_tertile_edges': statistics['income_tertile_edges']}\n        elif metric_id == 'metric-expected-calibration-error':\n            details = {'bins': statistics['calibration_bins'], 'subgroup_calibration': 'Requires the optional training dataset'}\n        else:\n            details = {'subgroup_statistics': statistics['slices']}\n        reason = None\n        if value is None:\n            reason = statistics.get('fairness_unavailable') or f'No saved {metric_name} measurement'\n        return _envelope(entity, context, metric_id, value, details, reason)\n    \n    return evaluate_explanations(entity, context)\n",
+      "source_hash": "4f6b57c0ad3079f0374e1fd4133330e2f6759d26852220bada8238c208e3a6af",
+      "entry_point": "evaluate_explanations",
+      "entity_contract": {
+        "kind": "model",
+        "name": "loan-approval-classifier",
+        "project": "loan-app3",
+        "interface": "mapping",
+        "read_only": true,
+        "fields": {
+          "key": "entity.key: exact newly registered model store URI, matching context.model_key",
+          "version": "entity.version: exact version returned by the training registration",
+          "estimator": "entity.estimator: fitted sklearn Pipeline; read-only predict_proba/classes_"
+        }
+      },
+      "result_contract": {
+        "type": "MeasurementEnvelope",
+        "required_fields": [
+          "project",
+          "entity",
+          "entity_version",
+          "objective_ref",
+          "objective",
+          "metric_result",
+          "status",
+          "error",
+          "evidence",
+          "provenance"
+        ],
+        "metric_result": {
+          "type": "MetricResult",
+          "required_fields": [
+            "metric",
+            "value",
+            "computed_at"
+          ]
+        },
+        "json_compatible": true
+      },
+      "dependencies": [
+        "numpy",
+        "pandas",
+        "scikit-learn>=1.5"
+      ],
+      "parameters": {
+        "target": "Loan_Approval_Status",
+        "positive_label": 1,
+        "decision_threshold": 0.9
+      },
+      "objective_ref": "model:loan-approval-classifier#metric-decision-coverage",
+      "objective": {
+        "name": "Traceable explanations for human review",
+        "description": "Ensure at least 95% of applicant predictions have a traceable rationale available to loan officers; preserve their ability to reject, override or escalate the advisory signal.",
+        "metric": {
+          "id": "metric-decision-coverage",
+          "name": "Decision Coverage (Traceable Predictions)",
+          "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+          "kind": "PRIMITIVE",
+          "scale": "RATIO",
+          "unit": {
+            "symbol": "%",
+            "name": "percent"
+          },
+          "range": {
+            "lower": 0.0,
+            "upper": 1.0,
+            "discrete": false
+          }
+        },
+        "condition": {
+          "threshold": {
+            "operator": "GEQ",
+            "value": 0.95
+          }
+        },
+        "priority": "MANDATORY",
+        "severity": "HIGH",
+        "requirements": [
+          "req-euai-art-13",
+          "req-euai-art-14",
+          "req-gdpr-art-22",
+          "req-eucharter-art-47"
+        ],
+        "rationale": "Supports transparent interpretation and counters automation bias; explanation fidelity and reviewer authority/training require separate validation."
+      },
+      "metric": {
+        "id": "metric-decision-coverage",
+        "name": "Decision Coverage (Traceable Predictions)",
+        "description": "Fraction of model predictions for which a traceable decision path or rule-based ",
+        "kind": "PRIMITIVE",
+        "scale": "RATIO",
+        "unit": {
+          "symbol": "%",
+          "name": "percent"
+        },
+        "range": {
+          "lower": 0.0,
+          "upper": 1.0,
+          "discrete": false
+        }
+      },
+      "source_paths": [
+        "catalog/metrics/explainability/decision-coverage.md"
+      ],
+      "source_hashes": {
+        "catalog/metrics/explainability/decision-coverage.md": "bf17a29c0e837426f5d24b8b5f3eb3fffd30d37eb4f46a77f4167e64bb6f59ad"
+      },
+      "bundle_version": "79da8bd1b27a",
+      "required_inputs": [
+        "key",
+        "version",
+        "estimator",
+        "target",
+        "positive_label",
+        "decision_threshold",
+        "evaluation_data",
+        "dataset_key",
+        "context",
+        "fairness",
+        "calibration",
+        "explanations",
+        "membership"
+      ],
+      "missing_inputs": [],
+      "unsupported_reasons": [],
+      "validation": {
+        "valid": true,
+        "static_only": true,
+        "executed": false,
+        "warnings": []
+      },
+      "artifact_id": "6319c36b9bbcd87e0c0eb50e"
+    },
+    "ready": true
+  }
+}
